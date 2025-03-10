@@ -1,5 +1,4 @@
-# Hardware Resource Usage Analyzer
-
+# Web Performance Resource Analyzer
 A **Next.js**-based web application for monitoring **CPU usage, memory usage, disk I/O, and network requests** in real-time. The application provides insights into hardware resource allocation and performance trends.
 
 ## Features 🚀
