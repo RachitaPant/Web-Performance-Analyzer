@@ -9,7 +9,7 @@ export default function HelpSection() {
           <li className="text-gray-700">✅ Improving website speed</li>
         </ul>
         <div className="mt-6 flex justify-center">
-          <button className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-all">
+          <button className="bg-[#E6B2BA] text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-all">
             Visit Help Center
           </button>
         </div>

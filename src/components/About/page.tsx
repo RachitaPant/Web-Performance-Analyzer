@@ -1,5 +1,6 @@
 export default function About(){
-    return ( <div className="bg-white p-8 rounded-lg shadow-md mt-6 w-full max-w-3xl text-center">
+
+    return ( <div  className=" bg-[#385170] p-8 rounded-lg shadow-md  mt-6 w-full max-w-3xl text-center">
         <h2 className="text-3xl font-bold text-gray-800">Why Web Performance Matters?</h2>
         <p className="text-gray-600 mt-3 leading-relaxed">
           A fast and optimized website ensures a seamless user experience, better search engine rankings, and higher conversion rates.
@@ -10,7 +11,7 @@ export default function About(){
           <FeatureCard title="SEO Boost" description="Rank higher on search engines with better Core Web Vitals." />
         </div>
         <div className="mt-6 flex justify-center">
-          <button className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-all">
+          <button className="bg-[#E6B2BA] text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-all">
             Learn More
           </button>
         </div>
