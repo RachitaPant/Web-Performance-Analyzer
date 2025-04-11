@@ -1,4 +1,4 @@
-import Image from "next/Image"
+import Image from "next/image"
 const AskAi=()=>{
 return ( <div className="bg-[#1a2634] rounded-lg p-4">
     <div className="flex items-center justify-between mb-4">
