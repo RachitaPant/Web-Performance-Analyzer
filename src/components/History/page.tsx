@@ -6,7 +6,7 @@ import { supabase } from "@/supabase/supabaseClient";
 interface HistoryItem {
   id: string;
   url: string;
-  analysis_data: any;
+  analysis_data: object;
   created_at: string;
   user_id: string;
 }

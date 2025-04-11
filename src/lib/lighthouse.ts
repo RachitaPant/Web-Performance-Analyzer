@@ -1,8 +1,9 @@
-import lighthouse from 'lighthouse';
+import lighthouse, { RunnerResult } from 'lighthouse';
 import chromeLauncher from 'chrome-launcher';
+import type { Result as LighthouseReport } from 'lighthouse';
 
 interface LighthouseResult {
-  report: any; 
+  report: LighthouseReport;
 }
 
 export async function runLighthouse(url: string): Promise<LighthouseResult | { error: string }> {
@@ -18,16 +19,19 @@ export async function runLighthouse(url: string): Promise<LighthouseResult | { e
       onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       port: chrome.port,
     };
+
     const runnerResult = await lighthouse(url, options);
 
     await chrome.kill();
 
-    const reportJson = runnerResult.report;
-    const report = JSON.parse(reportJson);
+    if (!runnerResult) {
+      return { error: 'Lighthouse did not return a result' };
+    }
 
-    return { report };
-  } catch (error: any) {
+    return { report: runnerResult.lhr };
+  } catch (error: unknown) {
     console.error('Lighthouse error:', error);
-    return { error: `Lighthouse analysis failed: ${error.message || 'Unknown error'}` };
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { error: `Lighthouse analysis failed: ${message}` };
   }
 }
