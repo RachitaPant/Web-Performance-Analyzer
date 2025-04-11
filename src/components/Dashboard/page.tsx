@@ -1,6 +1,5 @@
 import { useState } from "react"
 
-import SideBar from "../SideBar/Page"
 import Header from "../Header/page"
 import StatsCards from "../StatsCards/page"
 import Charts from "../Charts/page"

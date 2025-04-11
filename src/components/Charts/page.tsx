@@ -13,32 +13,32 @@ interface ChartsProps {
         "interactive"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
         "max-potential-fid"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
         "speed-index"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
         "cumulative-layout"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
         "server-response-time"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
         "mainthread-work-breakdown"?:{
           score?: number;
           numericValue?:number;
-          displayValue?:String;
+          displayValue?:string;
         }
       };
     };
@@ -46,8 +46,7 @@ interface ChartsProps {
 }
   
   const Charts: React.FC<ChartsProps> = ({ data }) =>{
-    const performanceScore =
-  data?.lighthouseData?.audits?.["interactive"]?.score ?? 0;
+  
   const speedIndex = {
     score: data?.lighthouseData?.audits?.["speed-index"]?.score ?? 0,
     displayValue: data?.lighthouseData?.audits?.["speed-index"]?.displayValue ?? "N/A",

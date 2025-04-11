@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { BellIcon, SearchIcon, ShoppingCartIcon } from "lucide-react"
+
 export default function Header(){
     return (<header className="bg-[#1a2634] p-4 flex items-center justify-between border-b border-gray-700">
 

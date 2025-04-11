@@ -5,9 +5,9 @@ import { supabase } from "@/supabase/supabaseClient";
 import { useEffect } from "react";
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Twitter, Linkedin, Instagram, ChevronLeft, ChevronRight } from "lucide-react"
+import {  ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/Button/page"
-import { Input } from "@/components/Input/page"
+
 
 export default function Login() {
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Navigation arrows */}
+           
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -119,7 +119,7 @@ export default function Login() {
               <Button onClick={()=>{handleLogin()}}  className="w-full bg-red-500 hover:bg-red-600 text-white">Login with Github</Button>
 
               <div className="text-center text-sm text-gray-500">
-                Don't have an account?
+                Dont have an account?
                 <Link onClick={()=>{handleLogin()}} href="#" className="text-red-500 hover:underline ml-1">
                   Sign up
                 </Link>
@@ -129,15 +129,7 @@ export default function Login() {
            
             <div className="flex justify-center gap-4 pt-4">
               
-              <Link href="#" className="text-gray-400 hover:text-gray-600">
-                <Twitter size={20} />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-gray-600">
-                <Linkedin size={20} />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-gray-600">
-                <Instagram size={20} />
-              </Link>
+             
             </div>
           </div>
         </div>
