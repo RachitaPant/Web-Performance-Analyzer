@@ -1,7 +1,22 @@
 import Link from "next/link"
 import {  ChevronDownIcon } from "lucide-react"
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 
 export default function SideBar(){
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (!error) {
+      window.location.href = '/' 
+    } else {
+      console.error('Logout failed:', error.message)
+    }
+  }
     return (   <div className="w-56 bg-[#1a2634] text-white flex flex-col">
         <div className="p-4 border-b border-gray-700 flex items-center gap-2">
           <div className="bg-emerald-500 rounded p-1">
@@ -79,24 +94,27 @@ export default function SideBar(){
             <span>Settings</span>
           </Link>
 
-          <Link href="#" className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:bg-[#243242]">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            <span>Logout</span>
-          </Link>
+          <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:bg-[#243242] w-full text-left"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Logout</span>
+        </button>
         </nav>
 
         <div className="p-4 mt-auto">

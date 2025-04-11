@@ -25,23 +25,13 @@ export default function Header(){
         </div>
         
         <div className="flex items-center gap-4">
-          <button className="text-gray-400 hover:text-white">
-            <SearchIcon className="w-5 h-5" />
-          </button>
-          <button className="text-gray-400 hover:text-white relative">
-            <BellIcon className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-          <button className="text-gray-400 hover:text-white relative">
-            <ShoppingCartIcon className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center text-[10px]">
-              3
-            </span>
-          </button>
+          
+        
+         
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <Image
-                src="/placeholder.svg?height=32&width=32"
+                src="/images/dashboard/user.png"
                 alt="User avatar"
                 width={32}
                 height={32}
@@ -49,7 +39,7 @@ export default function Header(){
               />
             </div>
             <div className="text-xs">
-              <div className="text-white">Olivia's Clothing</div>
+              <div className="text-white">Olivia's Dashboard</div>
               <div className="text-gray-400">Admin</div>
             </div>
           </div>
