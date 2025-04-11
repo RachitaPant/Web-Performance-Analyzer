@@ -39,7 +39,7 @@ export default function Header(){
               />
             </div>
             <div className="text-xs">
-              <div className="text-white">Olivia's Dashboard</div>
+              <div className="text-white">Olivias Dashboard</div>
               <div className="text-gray-400">Admin</div>
             </div>
           </div>

@@ -5,8 +5,9 @@ import { useState } from "react";
 import { supabase } from "@/supabase/supabaseClient"
 
 interface FormProps {
-  setAnalysisData: (data: any) => void;
+  setAnalysisData: (data: unknown) => void;
 }
+
 const Form: React.FC<FormProps> = ({ setAnalysisData }) =>{
 
   
@@ -21,7 +22,8 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) =>{
   const [memoryUsage, setMemoryUsage] = useState(0);
   const [diskIO, setDiskIO] = useState(0);
   const [advice, setAdvice] = useState("");
-  const [lighthouseReport, setLighthouseReport] = useState<any>(null); // Or more specific type
+  const [lighthouseReport, setLighthouseReport] = useState<Record<string, any> | null>(null);
+
 const [lighthousePerformance, setLighthousePerformance] = useState<number>(0);
 const [lighthouseAccessibility, setLighthouseAccessibility] = useState<number>(0);
 const [lighthouseBestPractices, setLighthouseBestPractices] = useState<number>(0);
@@ -75,14 +77,20 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
       setLighthouseSEO(analysis_data.lighthouseData?.categories?.seo?.score * 100 || 0);
      
     
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    }
+     finally {
       setLoading(false);
     }
   };
   
-  const saveSearch = async (result: any) => {
+  const saveSearch = async (result: Record<string, any>) => {
+   
     const {
       data: { user },
       error: userError
