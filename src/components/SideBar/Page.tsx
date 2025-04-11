@@ -6,9 +6,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+interface SideBarProps {
+  onSelectPage: (page: "dashboard" | "history") => void;
+  activePage: string;
+}
 
 
-export default function SideBar(){
+export default function SideBar({ onSelectPage, activePage }: SideBarProps){
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut()
     if (!error) {
@@ -17,15 +21,15 @@ export default function SideBar(){
       console.error('Logout failed:', error.message)
     }
   }
-    return (   <div className="w-56 bg-[#1a2634] text-white flex flex-col">
-        <div className="p-4 border-b border-gray-700 flex items-center gap-2">
+    return (   <div className="w-56 bg-[#1a2634] text-white flex flex-col h-screen">
+        <div className="p-4 border-b border-gray-700 flex items-center gap-2 ">
           <div className="bg-emerald-500 rounded p-1">
           
           </div>
           <span className="font-bold text-lg">AnalyseAi</span>
         </div>
 
-        <div className="px-4 py-2 text-xs text-gray-400">MENU</div>
+        <div className="px-4 py-2 text-xs text-gray-400 ">MENU</div>
 
         <nav className="flex-1">
           <Link href="#" className="flex items-center gap-3 px-4 py-2 bg-orange-500 text-white">
@@ -45,7 +49,7 @@ export default function SideBar(){
               <rect width="7" height="9" x="14" y="12" rx="1" />
               <rect width="7" height="5" x="3" y="16" rx="1" />
             </svg>
-            <span>Analytics</span>
+            <span   onClick={() => onSelectPage("dashboard")}>Analytics</span>
             <div className="ml-auto w-2 h-2 rounded-full bg-white"></div>
           </Link>
 
@@ -66,7 +70,7 @@ export default function SideBar(){
               <path d="m3.3 7 8.7 5 8.7-5" />
               <path d="M12 22V12" />
             </svg>
-            <span>History</span>
+            <button   onClick={() => onSelectPage("history")}><span>History</span></button>
             <ChevronDownIcon className="ml-auto w-4 h-4" />
           </Link>
 
