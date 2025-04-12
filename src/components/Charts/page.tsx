@@ -3,41 +3,42 @@ import {  ChevronDownIcon } from "lucide-react"
 interface ChartsProps {
   data?: {
     puppeteerData?: {
-      jsExecutionTime?: number;
-      cpuUsage?: number;
-      memoryUsage?: number;
-      diskIO?: number;
+      jsExecutionTime?: number | null;
+      cpuUsage?: number | null;
+      memoryUsage?: number | null;
+      diskIO?: number | null;
+      networkRequests?: string[];
     };
     lighthouseData?: {
       audits?: {
         "interactive"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
         "max-potential-fid"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
         "speed-index"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
         "cumulative-layout"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
         "server-response-time"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
         "mainthread-work-breakdown"?:{
-          score?: number;
-          numericValue?:number;
+          score?: number|null;
+          numericValue?:number|null;
           displayValue?:string;
         }
       };

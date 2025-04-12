@@ -1,5 +1,6 @@
 import lighthouse from 'lighthouse';
-import chromeLauncher from 'chrome-launcher';
+import * as chromeLauncher from 'chrome-launcher';
+
 import type { Result as LighthouseReport } from 'lighthouse';
 
 interface LighthouseResult {
@@ -14,11 +15,11 @@ export async function runLighthouse(url: string): Promise<LighthouseResult | { e
   try {
     const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
     const options = {
-      logLevel: 'info',
-      output: 'json',
+      logLevel: 'info' as 'info', 
       onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       port: chrome.port,
     };
+    
 
     const runnerResult = await lighthouse(url, options);
 

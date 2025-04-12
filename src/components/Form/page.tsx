@@ -5,44 +5,72 @@ import { useCallback, useState } from "react";
 
 import { supabase } from "@/supabase/supabaseClient"
 
-interface PuppeteerData {
-  jsExecutionTime: number | null;
-  cpuUsage: number | null;
-  memoryUsage: number | null;
-  diskIO: number | null;
-  networkRequests?: unknown[]; 
+export interface PuppeteerData {
+  jsExecutionTime?: number | null;
+  cpuUsage?: number | null;
+  memoryUsage?: number | null;
+  diskIO?: number | null;
+  networkRequests?: string[];
   performanceMetrics?: Record<string, unknown>; 
+  totalDomNodes?: number;
+  thirdPartyRequestsCount?: number;
+  resourceBreakdown?: Record<string, number>;
+  domContentLoadedTime?:number|0;
+  largeImages?: {
+    src: string;
+    width: number;
+    height: number;
+  }[];
+  longTasks?: {
+    name: string;
+    startTime: number;
+    duration: number;
+  }[];
+  unusedJSBytes?: {
+    name: string;
+    transferSize: number;
+    encodedBodySize: number;
+  }[];
 }
 
-interface LighthouseAudit {
-  score: number | null;
+export interface LighthouseAudit {
+  score?: number | null;
+  numericValue?: number | null;
+  displayValue?: string;
 }
 
-interface LighthouseAudits {
+
+export interface LighthouseAudits {
   "is-on-https": LighthouseAudit;
   "first-contentful-paint": LighthouseAudit;
   "largest-contentful-paint": LighthouseAudit;
+  "max-potential-fid":LighthouseAudit;
+  "speed-index":LighthouseAudit;
+  "interactive":LighthouseAudit;
+  "cumulative-layout":LighthouseAudit;
+  "server-response-time":LighthouseAudit
+  "mainthread-work-breakdown":LighthouseAudit;
 }
 
-interface LighthouseCategories {
+export interface LighthouseCategories {
   performance?: { score: number };
   accessibility?: { score: number };
   "best-practices"?: { score: number };
   seo?: { score: number };
 }
 
-interface LighthouseData {
+export interface LighthouseData {
   audits?: Partial<LighthouseAudits>;
   categories?: Partial<LighthouseCategories>;
 }
 
-interface AnalysisData {
+export interface AnalysisData {
   puppeteerData?: PuppeteerData;
   lighthouseData?: LighthouseData;
 }
 
 interface FormProps {
-  setAnalysisData: (data: unknown) => void;
+  setAnalysisData: (data: AnalysisData) => void; 
 }
 
 const Form: React.FC<FormProps> = ({ setAnalysisData }) =>{
@@ -80,6 +108,30 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
     result && result.puppeteerData && result.lighthouseData;
   
 
+  const defaultAnalysisData: AnalysisData = {
+    puppeteerData: {
+      jsExecutionTime: 0,
+      cpuUsage: 0,
+      memoryUsage: 0,
+      diskIO: 0,
+    },
+    lighthouseData: {
+      audits: {
+        "is-on-https": { score: 0 },
+        "first-contentful-paint": { score: 0 },
+        "largest-contentful-paint": { score: 0 },
+      },
+      categories: {
+        performance: { score: 0 },
+        accessibility: { score: 0 },
+        "best-practices": { score: 0 },
+        seo: { score: 0 },
+      },
+    },
+  };
+  
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidUrl(url)) {
@@ -106,7 +158,7 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
   
     
       setPerformanceMetrics(analysis_data.puppeteerData?.performanceMetrics || {});
-      setJsExecutionTime(analysis_data.puppeteerData?.jsExecutionTime ?? 0);
+      setJsExecutionTime(analysis_data.puppeteerData?.jsExecutionTime ?? undefined);
       setNetworkRequests(analysis_data.puppeteerData?.networkRequests ?? []);
       setCpuUsage(analysis_data.puppeteerData?.cpuUsage ?? 0);
       setMemoryUsage(analysis_data.puppeteerData?.memoryUsage ?? 0);
@@ -132,8 +184,12 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
     }
   };
   
-  const saveSearch = useCallback(async (result: AnalysisData) => {
-    
+  const saveSearch = useCallback(async (result: AnalysisData|null) => {
+    if (!result) {
+      console.error("Result is null");
+      return;
+    }
+  
    
     const {
       data: { user },
@@ -215,7 +271,7 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
  disabled={!isResultValid(result) || loading}
 
   type="button"
-  onClick={() => saveSearch(result)}
+  onClick={() => saveSearch(result || defaultAnalysisData)}
   className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-amber-200"
 >
 {loading ? "Please wait..." : "Save"}

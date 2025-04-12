@@ -5,26 +5,27 @@ import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 interface StatsProps {
   data?: {
     puppeteerData?: {
-      jsExecutionTime?: number;
-      cpuUsage?: number;
-      memoryUsage?: number;
-      diskIO?: number;
+      jsExecutionTime?: number | null;
+      cpuUsage?: number | null;
+      memoryUsage?: number | null;
+      diskIO?: number | null;
     };
     lighthouseData?: {
       audits?: {
         "is-on-https"?: {
-          score?: number;
+          score?: number | null;
         };
-        "first-contentful-paint"?:  {
-          score?: number;
+        "first-contentful-paint"?: {
+          score?: number | null;
         };
-        "largest-contentful-paint"?:  {
-          score?: number;
+        "largest-contentful-paint"?: {
+          score?: number | null;
         };
       };
     };
   };
 }
+
 
 
 const StatsCard: React.FC<StatsProps> = ({ data }) => {
@@ -54,25 +55,19 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
       {/* Execution Time */}
       <StatCard
         title="Execution Time"
-        value={puppeteerData.jsExecutionTime}
+        value={puppeteerData.jsExecutionTime?? undefined}
         unit="ms"
         prevValue={previousData.jsExecutionTime}
         isPositive={true}
       />
 
-      {/* CPU Usage */}
      
-
-      {/* Memory Usage */}
-    
-
-      {/* Disk I/O */}
      
 
       {/* First Contentful Paint */}
       <StatCard
         title="First Contentful Paint"
-        value={lighthouseData["first-contentful-paint"]?.score}
+        value={lighthouseData["first-contentful-paint"]?.score?? undefined}
         unit="s"
         prevValue={previousData.firstContentfulPaint}
         isPositive={false}
@@ -81,7 +76,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
       {/* Largest Contentful Paint */}
       <StatCard
         title="Largest Contentful Paint"
-        value={lighthouseData["largest-contentful-paint"]?.score}
+        value={lighthouseData["largest-contentful-paint"]?.score?? undefined}
         unit="s"
         prevValue={previousData.largestContentfulPaint}
         isPositive={false}
@@ -90,7 +85,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
       {/* HTTPS Score */}
       <StatCard
         title="HTTPS Score"
-        value={lighthouseData["is-on-https"]?.score}
+        value={lighthouseData["is-on-https"]?.score?? undefined}
         unit=""
         prevValue={previousData.httpsScore}
         isPositive={true}
