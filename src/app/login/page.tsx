@@ -35,9 +35,9 @@ export default function Login() {
   };
 
   return (
-  <> <div className="flex h-screen w-full">
+  <> <div className="flex h-screen w-full md:flex-row flex-col">
      
-      <div className="relative hidden md:flex md:w-1/2 bg-black overflow-hidden">
+      <div className="relative h-1/2 md:h-full md:flex md:w-1/2 bg-black overflow-hidden">
         <Image src="/images/login/cosmic.jpg" alt="Cosmic landscape" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
 
@@ -96,7 +96,7 @@ export default function Login() {
       </div>
 
    
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-8">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full flex items-center justify-center bg-white p-8">
         <div className="w-full max-w-md">
          
           <div className="flex justify-between items-center mb-12">
