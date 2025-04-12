@@ -14,11 +14,12 @@ export async function runLighthouse(url: string): Promise<LighthouseResult | { e
 
   try {
     const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
-    const options = {
-      logLevel: 'info' as 'info', 
+    const options: { logLevel: 'info'; onlyCategories: string[]; port: number } = {
+      logLevel: 'info',
       onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       port: chrome.port,
     };
+    
     
 
     const runnerResult = await lighthouse(url, options);
