@@ -1,6 +1,6 @@
-// src/components/AuthForm.tsx
+
 import React, { useState } from 'react';
-import { supabase } from '../supabase/supabaseClient';
+import { supabase } from '@/supabase/supabaseClient';
 
 const AuthForm: React.FC = () => {
   const [email, setEmail] = useState('');
