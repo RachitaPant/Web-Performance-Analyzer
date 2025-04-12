@@ -1,4 +1,4 @@
-import lighthouse, { RunnerResult } from 'lighthouse';
+import lighthouse from 'lighthouse';
 import chromeLauncher from 'chrome-launcher';
 import type { Result as LighthouseReport } from 'lighthouse';
 

@@ -1,6 +1,18 @@
 import { supabase } from './supabaseClient';
 
-export const saveAnalysisHistory = async (metrics: any, url: string) => {
+type Metrics = {
+  domContentLoadedTime: number;
+  jsExecutionTime: number;
+  coreWebVitals: {
+    LCP: number;
+    CLS: number;
+    FID: number;
+  };
+  totalDomNodes: number;
+  thirdPartyRequestsCount: number;
+};
+
+export const saveAnalysisHistory = async (metrics: Metrics, url: string) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
@@ -18,3 +30,4 @@ export const saveAnalysisHistory = async (metrics: any, url: string) => {
 
   if (error) console.error('Error saving:', error);
 };
+

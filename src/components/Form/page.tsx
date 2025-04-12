@@ -1,8 +1,45 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { supabase } from "@/supabase/supabaseClient"
+
+interface PuppeteerData {
+  jsExecutionTime: number | null;
+  cpuUsage: number | null;
+  memoryUsage: number | null;
+  diskIO: number | null;
+  networkRequests?: unknown[]; 
+  performanceMetrics?: Record<string, unknown>; 
+}
+
+interface LighthouseAudit {
+  score: number | null;
+}
+
+interface LighthouseAudits {
+  "is-on-https": LighthouseAudit;
+  "first-contentful-paint": LighthouseAudit;
+  "largest-contentful-paint": LighthouseAudit;
+}
+
+interface LighthouseCategories {
+  performance?: { score: number };
+  accessibility?: { score: number };
+  "best-practices"?: { score: number };
+  seo?: { score: number };
+}
+
+interface LighthouseData {
+  audits?: Partial<LighthouseAudits>;
+  categories?: Partial<LighthouseCategories>;
+}
+
+interface AnalysisData {
+  puppeteerData?: PuppeteerData;
+  lighthouseData?: LighthouseData;
+}
 
 interface FormProps {
   setAnalysisData: (data: unknown) => void;
@@ -10,7 +47,7 @@ interface FormProps {
 
 const Form: React.FC<FormProps> = ({ setAnalysisData }) =>{
 
-  
+  const [success,setSuccess]=useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,8 +58,10 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) =>{
   const [cpuUsage, setCpuUsage] = useState(0);
   const [memoryUsage, setMemoryUsage] = useState(0);
   const [diskIO, setDiskIO] = useState(0);
-  const [advice, setAdvice] = useState("");
-  const [lighthouseReport, setLighthouseReport] = useState<Record<string, any> | null>(null);
+  
+  const [lighthouseReport, setLighthouseReport] = useState<LighthouseData | null>(null);
+
+
 
 const [lighthousePerformance, setLighthousePerformance] = useState<number>(0);
 const [lighthouseAccessibility, setLighthouseAccessibility] = useState<number>(0);
@@ -36,6 +75,10 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
       return false;
     }
   };
+
+  const isResultValid = (result: any): result is AnalysisData =>
+    result && result.puppeteerData && result.lighthouseData;
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +132,8 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
     }
   };
   
-  const saveSearch = async (result: Record<string, any>) => {
+  const saveSearch = useCallback(async (result: AnalysisData) => {
+    
    
     const {
       data: { user },
@@ -141,9 +185,12 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
         });
       } else {
         console.log("Saved to history:", data);
+        setSuccess(true);
       }
-      
-  };
+      setUrl("");
+
+
+  },[url]);
   
   
   return (
@@ -165,15 +212,21 @@ const [lighthouseSEO, setLighthouseSEO] = useState<number>(0);
 </button>
 
 <button
-  disabled={!result}
+ disabled={!isResultValid(result) || loading}
+
   type="button"
   onClick={() => saveSearch(result)}
   className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-amber-200"
 >
-  Save
+{loading ? "Please wait..." : "Save"}
+
+
 </button>
 
 </form>
+{error && <p className="text-red-500 mt-2">{error}</p>}
+{success && <p className="text-green-400 mt-2">Saved successfully!</p>}
+
       </div>
      
       <div className="w-1/2 bg-[#1a2634] p-2 h-72 items-center justify-center rounded-md"></div>
