@@ -61,7 +61,7 @@ export default function Login() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image
-                  src="/placeholder.svg?height=40&width=40"
+                  src="/images/login/rachita.png"
                   alt="Profile"
                   width={40}
                   height={40}
