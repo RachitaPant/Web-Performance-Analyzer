@@ -1,13 +1,14 @@
-// components/Form/page.tsx
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { useCallback, useState } from "react";
 import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Shared interfaces (could be moved to a types file for reusability)
 export interface PuppeteerData {
   jsExecutionTime?: number | null;
   cpuUsage?: number | null;
@@ -68,24 +69,13 @@ interface FormProps {
   setAnalysisData: (data: AnalysisData) => void;
 }
 
-const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
-  const [success, setSuccess] = useState(false);
+// Modularized hook for form state and validation
+const useFormState = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [result, setResult] = useState<AnalysisData | null>(null);
-  const [performanceMetrics, setPerformanceMetrics] = useState({});
-  const [networkRequests, setNetworkRequests] = useState([]);
-  const [jsExecutionTime, setJsExecutionTime] = useState<number | null>(null);
-  const [cpuUsage, setCpuUsage] = useState(0);
-  const [memoryUsage, setMemoryUsage] = useState(0);
-  const [diskIO, setDiskIO] = useState(0);
-  const [lighthouseReport, setLighthouseReport] =
-    useState<LighthouseData | null>(null);
-  const [lighthousePerformance, setLighthousePerformance] = useState(0);
-  const [lighthouseAccessibility, setLighthouseAccessibility] = useState(0);
-  const [lighthouseBestPractices, setLighthouseBestPractices] = useState(0);
-  const [lighthouseSEO, setLighthouseSEO] = useState(0);
 
   const isValidUrl = (str: string) => {
     try {
@@ -96,32 +86,30 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     }
   };
 
-  const isResultValid = (result: any): result is AnalysisData =>
-    result && result.puppeteerData && result.lighthouseData;
-
-  const defaultAnalysisData: AnalysisData = {
-    puppeteerData: {
-      jsExecutionTime: 0,
-      cpuUsage: 0,
-      memoryUsage: 0,
-      diskIO: 0,
-    },
-    lighthouseData: {
-      audits: {
-        "is-on-https": { score: 0 },
-        "first-contentful-paint": { score: 0 },
-        "largest-contentful-paint": { score: 0 },
-      },
-      categories: {
-        performance: { score: 0 },
-        accessibility: { score: 0 },
-        "best-practices": { score: 0 },
-        seo: { score: 0 },
-      },
-    },
-    url: "",
+  return {
+    url,
+    setUrl,
+    loading,
+    setLoading,
+    error,
+    setError,
+    success,
+    setSuccess,
+    result,
+    setResult,
+    isValidUrl,
   };
+};
 
+// Modularized hook for handling analysis submission
+const useAnalysisSubmit = (
+  url: string,
+  setLoading: (loading: boolean) => void,
+  setError: (error: string) => void,
+  setResult: (result: AnalysisData | null) => void,
+  setAnalysisData: (data: AnalysisData) => void,
+  isValidUrl: (str: string) => boolean
+) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidUrl(url)) {
@@ -147,29 +135,6 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
 
       setResult(resultWithUrl);
       setAnalysisData(resultWithUrl);
-      setPerformanceMetrics(
-        analysis_data.puppeteerData?.performanceMetrics || {}
-      );
-      setJsExecutionTime(analysis_data.puppeteerData?.jsExecutionTime ?? null);
-      setNetworkRequests(analysis_data.puppeteerData?.networkRequests ?? []);
-      setCpuUsage(analysis_data.puppeteerData?.cpuUsage ?? 0);
-      setMemoryUsage(analysis_data.puppeteerData?.memoryUsage ?? 0);
-      setDiskIO(analysis_data.puppeteerData?.diskIO ?? 0);
-      setLighthouseReport(analysis_data.lighthouseData);
-      setLighthousePerformance(
-        analysis_data.lighthouseData?.categories?.performance?.score * 100 || 0
-      );
-      setLighthouseAccessibility(
-        analysis_data.lighthouseData?.categories?.accessibility?.score * 100 ||
-          0
-      );
-      setLighthouseBestPractices(
-        analysis_data.lighthouseData?.categories["best-practices"]?.score *
-          100 || 0
-      );
-      setLighthouseSEO(
-        analysis_data.lighthouseData?.categories?.seo?.score * 100 || 0
-      );
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unexpected error occurred.";
@@ -180,7 +145,12 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     }
   };
 
-  const saveSearch = useCallback(
+  return handleSubmit;
+};
+
+// Modularized hook for saving search to Firebase
+const useSaveSearch = (url: string, setSuccess: (success: boolean) => void) => {
+  return useCallback(
     async (result: AnalysisData | null) => {
       if (!result) {
         toast.error("No analysis data to save");
@@ -228,7 +198,6 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
           created_at: new Date(),
         });
         setSuccess(true);
-        setUrl("");
         toast.success("Saved successfully!");
       } catch (error) {
         console.error("Error saving history:", error);
@@ -237,44 +206,112 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     },
     [url]
   );
+};
+
+// Modularized component for the form UI
+const AnalysisFormUI: React.FC<{
+  url: string;
+  setUrl: (url: string) => void;
+  loading: boolean;
+  error: string;
+  success: boolean;
+  handleSubmit: (e: React.FormEvent) => void;
+  saveSearch: (result: AnalysisData | null) => void;
+  result: AnalysisData | null;
+}> = ({
+  url,
+  setUrl,
+  loading,
+  error,
+  success,
+  handleSubmit,
+  saveSearch,
+  result,
+}) => {
+  const isResultValid = (result: any): result is AnalysisData =>
+    result && result.puppeteerData && result.lighthouseData;
 
   return (
-    <div className="flex flex-row gap-2 rounded-md text-white justify-center items-center my-6 w-[100%]">
-      <div className="w-1/2 bg-[#1a2634] p-2 h-72 items-center justify-center rounded-md">
-        <h1 className="text-3xl font-semibold text-left my-10">
-          Lets Help You Analyze Your Site
-        </h1>
-        <form className="mt-4 flex gap-2" onSubmit={handleSubmit}>
-          <input
-            type="url"
-            placeholder="Enter website URL"
-            className="p-2 border border-gray-300 rounded-md w-full"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            required
-          />
+    <div className="w-full  mx-auto bg-gray-800 p-6 rounded-xl shadow-lg">
+      <h1 className="text-2xl font-bold text-white mb-6">
+        Analyze Your Website
+      </h1>
+      <p className="text-sm text-gray-400 mb-4">
+        Note: Limited to 1 audit per session to manage GCP costs. Audits may
+        take time.
+      </p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input
+          type="url"
+          placeholder="Enter website URL (e.g., https://example.com)"
+          className="p-3 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          required
+        />
+        <div className="flex gap-4">
           <button
-            disabled={loading}
             type="submit"
-            className="bg-white text-black px-4 py-2 rounded-md hover:bg-amber-200"
+            disabled={loading}
+            className="flex-1 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
           <button
-            disabled={!isResultValid(result) || loading}
             type="button"
-            onClick={() => saveSearch(result || defaultAnalysisData)}
-            className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-amber-200"
+            onClick={() => saveSearch(result)}
+            disabled={!isResultValid(result) || loading}
+            className="flex-1 bg-gray-600 text-white py-3 rounded-md hover:bg-gray-500 transition disabled:opacity-50"
           >
             {loading ? "Please wait..." : "Save"}
           </button>
-        </form>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-        {success && <p className="text-green-400 mt-2">Saved successfully!</p>}
-      </div>
-      <div className="w-1/2 bg-[#1a2634] p-2 h-72 items-center justify-center rounded-md">
-        <></>
-      </div>
+        </div>
+      </form>
+      {error && <p className="text-red-400 mt-4">{error}</p>}
+      {success && <p className="text-green-400 mt-4">Saved successfully!</p>}
+    </div>
+  );
+};
+
+// Main Form component, now simplified and composed of modular parts
+const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
+  const {
+    url,
+    setUrl,
+    loading,
+    setLoading,
+    error,
+    setError,
+    success,
+    setSuccess,
+    result,
+    setResult,
+    isValidUrl,
+  } = useFormState();
+
+  const handleSubmit = useAnalysisSubmit(
+    url,
+    setLoading,
+    setError,
+    setResult,
+    setAnalysisData,
+    isValidUrl
+  );
+
+  const saveSearch = useSaveSearch(url, setSuccess);
+
+  return (
+    <div className="flex justify-center items-center my-8 px-4 w-full ">
+      <AnalysisFormUI
+        url={url}
+        setUrl={setUrl}
+        loading={loading}
+        error={error}
+        success={success}
+        handleSubmit={handleSubmit}
+        saveSearch={saveSearch}
+        result={result}
+      />
     </div>
   );
 };

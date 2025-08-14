@@ -123,9 +123,6 @@ export default function Login() {
       </div>
       <div className="w-full md:w-1/2 h-1/2 md:h-full flex items-center justify-center bg-white p-8">
         <div className="w-full max-w-md">
-          <div className="flex justify-between items-center mb-12">
-            <div className="text-xl font-bold text-gray-600">AnalyzeAI</div>
-          </div>
           <div className="space-y-6">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold text-black">Hi Developer</h1>
