@@ -26,12 +26,17 @@ export default function Login() {
           console.log("Redirect login successful:", result.user);
           setTimeout(() => router.push("/"), 500);
         }
-      } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
-        console.error("Redirect login error:", {
-          code: error.code,
-          message: error.message,
-        });
-        setError(`Redirect login failed: ${error.message}`);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Redirect login error:", {
+            message: error.message,
+            code: (error as { code?: string }).code,
+          });
+          setError(`Redirect login failed: ${error.message}`);
+        } else {
+          console.error("Redirect login error: unknown", error);
+          setError("Redirect login failed: Unknown error");
+        }
       }
     };
 
@@ -70,12 +75,17 @@ export default function Login() {
         }
       });
       console.log("GitHub login successful");
-    } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
-      console.error("GitHub login error:", {
-        code: error.code,
-        message: error.message,
-      });
-      setError(`Login failed: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("GitHub login error:", {
+          message: error.message,
+          code: (error as { code?: string }).code,
+        });
+        setError(`GitHub login failed: ${error.message}`);
+      } else {
+        console.error("GitHub login error: unknown", error);
+        setError("GitHub login failed: Unknown error");
+      }
     } finally {
       setLoading(false);
     }

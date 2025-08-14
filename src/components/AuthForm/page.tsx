@@ -26,8 +26,12 @@ const AuthForm: React.FC = () => {
         await signInWithEmailAndPassword(auth, email, password);
         setMessage("Logged in!");
       }
-    } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
-      setMessage(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("An unknown error occurred");
+      }
     }
 
     setLoading(false);
