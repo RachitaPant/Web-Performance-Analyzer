@@ -7,6 +7,8 @@ A **Next.js**-based web application for monitoring **CPU usage, memory usage, di
 - **Graphical Visualization**: Displays performance metrics using interactive charts.
 - **Performance Advice**: Get automated recommendations based on the collected metrics.
 
+# See it in action 
+Video URL: [click here](https://www.linkedin.com/posts/rachita-pant_webperformance-nextjs-lighthouse-activity-7317088421984772096-2-Wf?utm_source=share&utm_medium=member_desktop&rcm=ACoAADSI4QMBGNYYx9focleBnP4pRYzIq_iv6jQ)
 ## Installation & Setup 🛠️
 
 ### Prerequisites
