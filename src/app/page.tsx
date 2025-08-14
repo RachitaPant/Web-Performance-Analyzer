@@ -1,5 +1,5 @@
 "use client";
-import Footer from "@/components/Footer/page";
+
 import Dashboard from "@/components/Dashboard/page";
 import ProtectedRoute from "@/components/ProtectedRoute/page";
 import { useState } from "react";

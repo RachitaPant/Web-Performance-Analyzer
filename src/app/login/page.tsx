@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import { Button } from "@/components/Button/page";
 
 export default function Login() {
@@ -26,7 +26,7 @@ export default function Login() {
           console.log("Redirect login successful:", result.user);
           setTimeout(() => router.push("/"), 500);
         }
-      } catch (error: any) {
+      } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
         console.error("Redirect login error:", {
           code: error.code,
           message: error.message,
@@ -70,7 +70,7 @@ export default function Login() {
         }
       });
       console.log("GitHub login successful");
-    } catch (error: any) {
+    } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
       console.error("GitHub login error:", {
         code: error.code,
         message: error.message,

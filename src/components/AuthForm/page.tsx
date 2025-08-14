@@ -26,7 +26,7 @@ const AuthForm: React.FC = () => {
         await signInWithEmailAndPassword(auth, email, password);
         setMessage("Logged in!");
       }
-    } catch (error: any) {
+    } catch (/* eslint-disable-next-line @typescript-eslint/no-explicit-any */ error: any) {
       setMessage(error.message);
     }
 
