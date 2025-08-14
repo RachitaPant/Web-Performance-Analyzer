@@ -1,27 +1,37 @@
 import { NextResponse } from "next/server";
-import { analyzeWebsite } from "@/lib/puppeteer";
-import { runLighthouse } from "@/lib/lighthouse"; 
 
 export async function POST(req: Request) {
-  console.log("Received request:", req.method);
+  const { url } = await req.json();
+
+  if (!url || !url.startsWith("http")) {
+    return NextResponse.json(
+      { error: "Valid URL is required" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const { url } = await req.json();
-    console.log("Received URL:", url);
+    const response = await fetch(`${process.env.NEXT_API_ENDPOINT}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
 
-    if (!url || !url.startsWith("http")) {
-      return NextResponse.json({ error: "Valid URL is required" }, { status: 400 });
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData.error },
+        { status: response.status }
+      );
     }
 
-    const [puppeteerData, lighthouseData] = await Promise.all([
-      analyzeWebsite(url),
-      runLighthouse(url),
-    ]);
-    if ('error' in lighthouseData) {
-      return NextResponse.json({ error: lighthouseData.error }, { status: 500 });
-    }
-    return NextResponse.json({ puppeteerData, lighthouseData: lighthouseData.report });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Analysis Error:", error);
-    return NextResponse.json({ error: "Failed to analyze website" }, { status: 500 });
+    console.error("Next.js API error:", error);
+    return NextResponse.json(
+      { error: "Failed to connect to analysis backend" },
+      { status: 500 }
+    );
   }
 }
