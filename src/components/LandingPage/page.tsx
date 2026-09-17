@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Zap, Shield, Clock, Gauge, Sparkles, Layers } from "lucide-react";
+import { Zap } from "lucide-react";
 import FeatureCarousel from "./FeatureCarousal";
 import HowItWorks from "./HowItWorks";
 import SampleResult from "./SampleResult";
@@ -461,71 +461,6 @@ function AuditMetric({
           <span className="text-[10px] text-gray-600 font-mono">{unit}</span>
         )}
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex gap-3 items-start p-4 bg-blue-950/20 border border-blue-500/20 rounded-lg hover:border-blue-400/50 transition">
-      <div className="text-pink-500 mt-1">{icon}</div>
-      <div>
-        <h3 className="font-semibold">{title}</h3>
-        <p className="text-gray-400 text-sm">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function ScoreCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  const colors = {
-    green: "bg-green-500/20 border-green-500/50 text-green-400",
-    blue: "bg-blue-500/20 border-blue-500/50 text-blue-400",
-    pink: "bg-pink-500/20 border-pink-500/50 text-pink-400",
-    purple: "bg-purple-500/20 border-purple-500/50 text-purple-400",
-  };
-  return (
-    <div
-      className={`flex justify-between items-center p-3 border rounded-lg ${colors[color as keyof typeof colors]}`}
-    >
-      <span className="text-sm">{label}</span>
-      <span className="font-bold text-lg">{value}</span>
-    </div>
-  );
-}
-
-function MetricDetail({
-  label,
-  value,
-  status,
-}: {
-  label: string;
-  value: string;
-  status: string;
-}) {
-  return (
-    <div className="flex justify-between items-center p-3 bg-blue-950/30 border border-blue-500/20 rounded-lg">
-      <div>
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="text-xs text-gray-500">{value}</p>
-      </div>
-      <span className="text-xs font-semibold text-green-400">{status}</span>
     </div>
   );
 }

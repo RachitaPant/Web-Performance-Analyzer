@@ -201,8 +201,8 @@ export default function HowItWorks() {
         <span className="inline-block w-10 h-[2px] bg-pink-500 mb-6" />
         <h2 className="text-4xl font-bold tracking-tight">How it works</h2>
         <p className="text-gray-400 mt-4 leading-relaxed">
-          Four steps from a URL you're worried about to a faster site. No setup,
-          no agent to install.
+          Four steps from a URL you&apos;re worried about to a faster site. No
+          setup, no agent to install.
         </p>
       </div>
 

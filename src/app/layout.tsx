@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// @ts-expect-error Next.js handles this stylesheet import at build time.
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthProvider"; // adjust based on your path
 
