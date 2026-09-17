@@ -1,30 +1,275 @@
 @import "tailwindcss";
 
-:root {
-  --background: #020e1d;
-  --foreground: #020e1d;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020e1d;
-    --foreground: #020e1d;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #020e1d;
+  color: #ffffff;
 }
 
-html {
-  scroll-behavior: smooth;
+/* =========================================
+   SITEPULSE AUDIT ANIMATION
+========================================= */
+
+@keyframes audit-scan {
+  0% {
+    transform: translateY(-5px);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  92% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(360px);
+    opacity: 0;
+  }
+}
+
+@keyframes audit-progress {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  25% {
+    left: 25%;
+  }
+
+  45% {
+    left: 50%;
+  }
+
+  65% {
+    left: 75%;
+  }
+
+  85% {
+    left: 100%;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes audit-node-active {
+  0%,
+  15% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  20%,
+  35% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  40%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+@keyframes audit-metric {
+  0%,
+  15% {
+    opacity: 0.25;
+    transform: translateY(5px);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0.65;
+  }
+}
+
+@keyframes audit-finding {
+  0%,
+  35% {
+    opacity: 0.25;
+    transform: translateY(6px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.65;
+  }
+}
+
+/* =========================================
+   SCANNING BEAM
+========================================= */
+
+.audit-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.2),
+    rgba(34, 211, 238, 1),
+    rgba(59, 130, 246, 0.2),
+    transparent
+  );
+
+  box-shadow:
+    0 0 8px rgba(34, 211, 238, 0.8),
+    0 0 25px rgba(59, 130, 238, 0.5);
+
+  /* FAST */
+  animation: audit-scan 2.2s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+/* =========================================
+   PIPELINE
+========================================= */
+
+.audit-progress-line {
+  background: linear-gradient(90deg, #3b82f6, #22d3ee, #ec4899);
+
+  box-shadow:
+    0 0 8px rgba(59, 130, 246, 0.7),
+    0 0 16px rgba(34, 211, 238, 0.4);
+
+  /* FAST */
+  animation: audit-progress 2.4s ease-in-out infinite;
+}
+
+/* Pipeline nodes */
+
+.audit-node-dot {
+  animation: audit-node-active 2.4s ease-in-out infinite;
+}
+
+.audit-node-1 .audit-node-dot {
+  animation-delay: 0.48s;
+}
+
+.audit-node-2 .audit-node-dot {
+  animation-delay: 0.96s;
+}
+
+.audit-node-3 .audit-node-dot {
+  animation-delay: 1.44s;
+}
+
+.audit-node-4 .audit-node-dot {
+  animation-delay: 1.92s;
+}
+
+/* =========================================
+   METRICS
+========================================= */
+
+.audit-metric {
+  opacity: 0.25;
+
+  /* FAST */
+  animation: audit-metric 2.4s ease-in-out infinite;
+}
+
+.audit-metric:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.audit-metric:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.audit-metric:nth-child(4) {
+  animation-delay: 0.6s;
+}
+
+/* =========================================
+   FINDING
+========================================= */
+
+.audit-finding {
+  animation: audit-finding 2.4s ease-in-out infinite;
+}
+
+/* =========================================
+   FLOATING CARDS
+========================================= */
+
+@keyframes audit-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.audit-floating {
+  animation: audit-float 4s ease-in-out infinite;
+}
+
+.audit-score {
+  animation: audit-float 4.5s ease-in-out infinite reverse;
+}
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+  .audit-scan-line,
+  .audit-progress-line,
+  .audit-node-dot,
+  .audit-metric,
+  .audit-finding,
+  .audit-floating,
+  .audit-score {
+    animation: none;
+  }
+
+  .audit-metric,
+  .audit-finding {
+    opacity: 1;
+  }
 }
