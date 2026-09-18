@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Zap, Menu, X } from "lucide-react";
 import FeatureCarousel from "./FeatureCarousal";
 import HowItWorks from "./HowItWorks";
 import SampleResult from "./SampleResult";
@@ -11,6 +11,22 @@ import BuiltForDevelopers from "./BuiltForDevelopers";
 export default function LandingPage() {
   const [url, setUrl] = useState("");
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#how", label: "How it works" },
+    { href: "#metrics", label: "Metrics" },
+    { href: "#about", label: "About" },
+  ];
 
   const handleAnalyze = () => {
     if (url) {
@@ -33,48 +49,87 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#020e1d] via-[#0a1929] to-[#020e1d] text-white">
       {/* Header */}
-      <header className="border-b border-blue-500/20 bg-[#020e1d]/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-pink-500" />
-            <span className="text-lg font-bold">SitePulse</span>
-            <span className="text-xs text-gray-400 ml-1">SPEED MATTERS</span>
+      <header className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4">
+        <div
+          className={`w-full max-w-6xl rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 ${
+            scrolled
+              ? "shadow-lg shadow-black/30 border-blue-500/20 bg-[#020e1d]/60"
+              : "shadow-black/10"
+          }`}
+        >
+          <div className="px-5 sm:px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-pink-400" />
+              </div>
+              <span className="text-lg font-bold">SitePulse</span>
+              <span className="hidden sm:inline text-xs text-gray-400 ml-1">
+                SPEED MATTERS
+              </span>
+            </div>
+
+            <nav className="hidden md:flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] px-1.5 py-1.5">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="relative px-4 py-1.5 text-sm text-gray-300 rounded-full hover:text-white hover:bg-white/10 transition-all"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
+            <div className="flex items-center gap-2">
+              <Link href="/login" className="hidden sm:block">
+                <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2 rounded-full text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 active:scale-[0.97] transition-all">
+                  Run an Audit →
+                </button>
+              </Link>
+
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-300 hover:text-white transition-colors"
+                aria-label="Toggle menu"
+              >
+                {menuOpen ? (
+                  <X className="w-4 h-4" />
+                ) : (
+                  <Menu className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#features"
-              className="text-gray-300 hover:text-white transition"
-            >
-              Features
-            </a>
-            <a
-              href="#how"
-              className="text-gray-300 hover:text-white transition"
-            >
-              How it works
-            </a>
-            <a
-              href="#metrics"
-              className="text-gray-300 hover:text-white transition"
-            >
-              Metrics
-            </a>
-            <a
-              href="#about"
-              className="text-gray-300 hover:text-white transition"
-            >
-              About
-            </a>
-          </nav>
-
-          <Link href="/login">
-            <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition">
-              Run an Audit →
-            </button>
-          </Link>
+          {/* Mobile menu */}
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+              menuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="px-5 pb-4 pt-1 flex flex-col gap-1 border-t border-white/10">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+              <Link href="/login" onClick={() => setMenuOpen(false)}>
+                <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 transition-all">
+                  Run an Audit →
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
+
+      {/* Spacer for fixed navbar */}
+      <div className="h-24" />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">
