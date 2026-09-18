@@ -7,6 +7,8 @@ import { auth } from "@/lib/firebaseClient";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signInAnonymously,
 } from "firebase/auth";
 
 export default function SitePulseLogin() {
@@ -41,6 +43,46 @@ export default function SitePulseLogin() {
     } catch (err) {
       const error = err as { message?: string };
       setError(error.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!email) {
+      setError("Enter your email address above, then click 'Forgot password?'");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccess("Password reset email sent! Check your inbox.");
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || "Failed to send password reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      await signInAnonymously(auth);
+      setSuccess("Signed in as demo user! Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
+    } catch (err) {
+      const error = err as { message?: string };
+      setError(error.message || "Demo sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -146,9 +188,13 @@ export default function SitePulseLogin() {
                   />
                   <span className="text-gray-400">Remember me</span>
                 </label>
-                <a href="#" className="text-pink-400 hover:text-pink-300 transition">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-pink-400 hover:text-pink-300 transition"
+                >
                   Forgot password?
-                </a>
+                </button>
               </div>
             )}
 
@@ -185,7 +231,9 @@ export default function SitePulseLogin() {
           {/* Demo Button */}
           <button
             type="button"
-            className="w-full border border-blue-500/50 py-3 rounded-lg font-semibold text-blue-300 hover:bg-blue-500/10 transition"
+            onClick={handleDemoLogin}
+            disabled={loading}
+            className="w-full border border-blue-500/50 py-3 rounded-lg font-semibold text-blue-300 hover:bg-blue-500/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue as Demo User
           </button>
