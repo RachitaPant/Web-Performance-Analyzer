@@ -8,28 +8,28 @@ const  RUMInsights: React.FC<RUMStatsProps>= ({ DOMContentLoadTime,
   thirdPartyRequestCount,
   totalDOMNodes}) => {
 
-return ( <div className="bg-[#1a2634] rounded-lg p-4 lg:col-span-2">
+return ( <div className="dash-card animate-fade-up p-4 lg:col-span-2" style={{ animationDelay: "80ms" }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-white">Real User Experience(RUM)-style Insights</h3>
-         
+
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-xs text-gray-400 border-b border-gray-700">
+                <tr className="text-xs text-gray-400 border-b border-blue-500/20">
                   <th className="pb-2 text-left font-medium">METRIC</th>
                   <th className="pb-2 text-left font-medium">VALUE</th>
-               
+
                   <th className="pb-2 text-left font-medium">UNIT</th>
                   <th className="pb-2 text-left font-medium">info</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-700">
+                <tr className="border-b border-blue-500/10 hover:bg-blue-500/5 transition-colors">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-md overflow-hidden">
+                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
                         <Image
                           src="/images/dashboard/clock.png"
                           alt="DOM Conetnt Time"
@@ -45,14 +45,14 @@ return ( <div className="bg-[#1a2634] rounded-lg p-4 lg:col-span-2">
                     </div>
                   </td>
                   <td className="py-3 text-xs text-white">{DOMContentLoadTime}</td>
-                 
+
                   <td className="py-3 text-xs text-white">ms</td>
                   <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
                 </tr>
-                <tr className="border-b border-gray-700">
+                <tr className="border-b border-blue-500/10 hover:bg-blue-500/5 transition-colors">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-md overflow-hidden">
+                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
                         <Image
                           src="/images/dashboard/numbers.png"
                           alt="Olivia Super Push-up Bra"
@@ -68,14 +68,14 @@ return ( <div className="bg-[#1a2634] rounded-lg p-4 lg:col-span-2">
                     </div>
                   </td>
                   <td className="py-3 text-xs text-white">{totalDOMNodes}</td>
-                 
+
                   <td className="py-3 text-xs text-white">nodes</td>
                   <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
                 </tr>
-                <tr>
+                <tr className="hover:bg-blue-500/5 transition-colors">
                   <td className="py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-md overflow-hidden">
+                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
                         <Image
                           src="/images/dashboard/counter.png"
                           alt="Hammered Drop Earrings"
@@ -91,7 +91,7 @@ return ( <div className="bg-[#1a2634] rounded-lg p-4 lg:col-span-2">
                     </div>
                   </td>
                   <td className="py-3 text-xs text-white">{thirdPartyRequestCount}</td>
-                 
+
                   <td className="py-3 text-xs text-white">reqs</td>
                   <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
                 </tr>

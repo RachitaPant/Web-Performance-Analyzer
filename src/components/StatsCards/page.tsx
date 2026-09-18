@@ -31,7 +31,7 @@ interface StatsProps {
 const StatsCard: React.FC<StatsProps> = ({ data }) => {
   if (!data || Object.keys(data).length === 0) {
     return (
-        <div className="flex items-center justify-center h-40 bg-[#1a2634] rounded-lg p-6 mb-2">
+        <div className="dash-card animate-fade-up flex items-center justify-center h-40 p-6 mb-2">
             <p className="text-gray-400 text-center">No stats available. Enter a URL to analyze.</p>
         </div>
     );
@@ -54,6 +54,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       {/* Execution Time */}
       <StatCard
+        index={0}
         title="Execution Time"
         value={puppeteerData.jsExecutionTime?? undefined}
         unit="ms"
@@ -61,11 +62,9 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
         isPositive={true}
       />
 
-     
-     
-
       {/* First Contentful Paint */}
       <StatCard
+        index={1}
         title="First Contentful Paint"
         value={lighthouseData["first-contentful-paint"]?.score?? undefined}
         unit="s"
@@ -75,6 +74,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
 
       {/* Largest Contentful Paint */}
       <StatCard
+        index={2}
         title="Largest Contentful Paint"
         value={lighthouseData["largest-contentful-paint"]?.score?? undefined}
         unit="s"
@@ -84,6 +84,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
 
       {/* HTTPS Score */}
       <StatCard
+        index={3}
         title="HTTPS Score"
         value={lighthouseData["is-on-https"]?.score?? undefined}
         unit=""
@@ -95,6 +96,7 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
 };
 
 interface StatCardProps {
+  index: number;
   title: string;
   value?: number;
   unit: string;
@@ -103,6 +105,7 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({
+  index,
   title,
   value,
   unit,
@@ -117,10 +120,15 @@ const StatCard: React.FC<StatCardProps> = ({
       ? `${percentageChange > 0 ? "+" : ""}${percentageChange.toFixed(1)}%`
       : "No previous data";
 
+  const trendUp = percentageChange >= 0;
+
   return (
-    <div className="bg-[#1a2634] rounded-lg p-4">
+    <div
+      className="dash-card animate-fade-up p-4"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <div className="flex items-center gap-2 mb-1">
-        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+        <div className="w-2 h-2 rounded-full bg-blue-400 animate-glow-pulse"></div>
         <span className="text-xs text-gray-400">{title}</span>
       </div>
       <div className="flex items-center justify-between">
@@ -134,19 +142,21 @@ const StatCard: React.FC<StatCardProps> = ({
               fill="none"
               stroke={isPositive ? "#22c55e" : "#ef4444"}
               strokeWidth="2"
+              strokeLinecap="round"
+              className="drop-shadow-[0_0_4px_rgba(34,197,94,0.4)]"
             />
           </svg>
         </div>
       </div>
       <div className="flex items-center text-xs">
-        {percentageChange >= 0 ? (
+        {trendUp ? (
           <ArrowUpIcon className="w-3 h-3 text-green-500" />
         ) : (
           <ArrowDownIcon className="w-3 h-3 text-red-500" />
         )}
         <span
-          className={`mr-1 ${
-            percentageChange >= 0 ? "text-green-500" : "text-red-500"
+          className={`mr-1 font-medium ${
+            trendUp ? "text-green-500" : "text-red-500"
           }`}
         >
           {formattedChange}

@@ -232,43 +232,64 @@ const AnalysisFormUI: React.FC<{
     result && result.puppeteerData && result.lighthouseData;
 
   return (
-    <div className="w-full  mx-auto bg-gray-800 p-6 rounded-xl shadow-lg">
-      <h1 className="text-2xl font-bold text-white mb-6">
-        Analyze Your Website
-      </h1>
-      <p className="text-sm text-gray-400 mb-4">
+    <div className="w-full mx-auto dash-card animate-fade-up p-6 md:p-8">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-2xl">⚡</span>
+        <h1 className="text-2xl font-bold text-white">
+          Analyze Your Website
+        </h1>
+      </div>
+      <p className="text-sm text-gray-400 mb-6">
         Note: Limited to 1 audit per session to manage GCP costs. Audits may
         take time.
       </p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
           type="url"
           placeholder="Enter website URL (e.g., https://example.com)"
-          className="p-3 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 p-3 bg-blue-950/40 text-white border border-blue-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-400 transition-all placeholder:text-gray-500"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+            className="flex-1 sm:flex-none relative overflow-hidden bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/40 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
+            {loading && (
+              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
             {loading ? "Analyzing..." : "Analyze"}
           </button>
           <button
             type="button"
             onClick={() => saveSearch(result)}
             disabled={!isResultValid(result) || loading}
-            className="flex-1 bg-gray-600 text-white py-3 rounded-md hover:bg-gray-500 transition disabled:opacity-50"
+            className="flex-1 sm:flex-none border border-blue-500/30 text-white px-6 py-3 rounded-lg hover:border-blue-400 hover:bg-blue-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ? "Please wait..." : "Save"}
+            Save
           </button>
         </div>
       </form>
-      {error && <p className="text-red-400 mt-4">{error}</p>}
-      {success && <p className="text-green-400 mt-4">Saved successfully!</p>}
+
+      {loading && (
+        <div className="mt-6 space-y-2 animate-fade-up">
+          <div className="h-2 w-2/3 rounded-full shimmer-bg" />
+          <div className="h-2 w-1/2 rounded-full shimmer-bg" />
+          <div className="h-2 w-5/6 rounded-full shimmer-bg" />
+        </div>
+      )}
+
+      {error && (
+        <p className="text-red-400 mt-4 animate-fade-up text-sm">{error}</p>
+      )}
+      {success && (
+        <p className="text-green-400 mt-4 animate-fade-up text-sm">
+          Saved successfully!
+        </p>
+      )}
     </div>
   );
 };

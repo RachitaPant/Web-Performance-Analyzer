@@ -120,13 +120,21 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
         freshAnalysisData={data?.puppeteerData?.jsExecutionTime ?? 0}
       />
 
-      <div className="bg-[#1a2634] rounded-lg p-4">
+      <div className="dash-card animate-fade-up p-4" style={{ animationDelay: "80ms" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-white">Metrics by Category</h3>
         </div>
         <div className="flex items-center">
           <div className="relative w-40 h-40">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="transparent"
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth="20"
+              />
               <circle
                 cx="50"
                 cy="50"
@@ -136,6 +144,9 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
                 strokeWidth="20"
                 strokeDasharray="75.4 176.6"
                 strokeDashoffset="0"
+                strokeLinecap="round"
+                className="animate-ring-fill"
+                style={{ ["--ring-start" as string]: 251.2, ["--ring-end" as string]: 0 }}
               />
               <circle
                 cx="50"
@@ -146,6 +157,7 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
                 strokeWidth="20"
                 strokeDasharray="37.7 176.6"
                 strokeDashoffset="-75.4"
+                strokeLinecap="round"
               />
               <circle
                 cx="50"
@@ -156,6 +168,7 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
                 strokeWidth="20"
                 strokeDasharray="25.1 176.6"
                 strokeDashoffset="-113.1"
+                strokeLinecap="round"
               />
               <circle
                 cx="50"
@@ -166,6 +179,7 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
                 strokeWidth="20"
                 strokeDasharray="25.1 176.6"
                 strokeDashoffset="-138.2"
+                strokeLinecap="round"
               />
               <circle
                 cx="50"
@@ -176,85 +190,53 @@ const Charts: React.FC<ChartsProps> = ({ data }) => {
                 strokeWidth="20"
                 strokeDasharray="12.6 176.6"
                 strokeDashoffset="-163.3"
+                strokeLinecap="round"
               />
-
-              <text
-                x="50"
-                y="45"
-                textAnchor="middle"
-                fill="white"
-                fontSize="10"
-                fontWeight="bold"
-              >
-                {score}
-              </text>
-              <text x="50" y="60" textAnchor="middle" fill="gray" fontSize="6">
-                TOTAL SCORE
-              </text>
             </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-white">{score}</span>
+              <span className="text-[9px] tracking-wide text-gray-400">
+                TOTAL SCORE
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 grid gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#f43f5e]"></div>
-              <span className="text-xs text-white">Speed-Index </span>
-              <span className="text-xs text-gray-400 ml-auto">
-                {speedIndex.displayValue}
-              </span>
-            </div>
-            <div className="text-[10px] text-gray-500">{speedIndex.score}</div>
-
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#06b6d4]"></div>
-              <span className="text-xs text-white">
-                Max Potential First Input Delay{" "}
-              </span>
-              <span className="text-xs text-gray-400 ml-auto">
-                {maxPotentialFID.displayValue}
-              </span>
-            </div>
-            <div className="text-[10px] text-gray-500">
-              {maxPotentialFID.score}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#8b5cf6]"></div>
-              <span className="text-xs text-white">Server Response Time </span>
-              <span className="text-xs text-gray-400 ml-auto">
-                {serverResponseTime.displayValue}
-              </span>
-            </div>
-            <div className="text-[10px] text-gray-500">
-              {serverResponseTime.score}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#f59e0b]"></div>
-              <span className="text-xs text-white">Cumulative Layout</span>
-              <span className="text-xs text-gray-400 ml-auto">
-                {cumulativeLayout.displayValue}
-              </span>
-            </div>
-            <div className="text-[10px] text-gray-500">
-              {cumulativeLayout.score}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#10b981]"></div>
-              <span className="text-xs text-white">
-                Minimize main-thread work{" "}
-              </span>
-              <span className="text-xs text-gray-400 ml-auto">
-                {mainThreadWork.displayValue}
-              </span>
-            </div>
-            <div className="text-[10px] text-gray-500">
-              {mainThreadWork.score}
-            </div>
+            <LegendRow color="#f43f5e" label="Speed-Index" value={speedIndex.displayValue} score={speedIndex.score} />
+            <LegendRow color="#06b6d4" label="Max Potential First Input Delay" value={maxPotentialFID.displayValue} score={maxPotentialFID.score} />
+            <LegendRow color="#8b5cf6" label="Server Response Time" value={serverResponseTime.displayValue} score={serverResponseTime.score} />
+            <LegendRow color="#f59e0b" label="Cumulative Layout" value={cumulativeLayout.displayValue} score={cumulativeLayout.score} />
+            <LegendRow color="#10b981" label="Minimize main-thread work" value={mainThreadWork.displayValue} score={mainThreadWork.score} />
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+const LegendRow = ({
+  color,
+  label,
+  value,
+  score,
+}: {
+  color: string;
+  label: string;
+  value: string;
+  score: number;
+}) => (
+  <div className="group rounded-md px-2 py-1 -mx-2 hover:bg-white/5 transition-colors">
+    <div className="flex items-center gap-2">
+      <div
+        className="w-2 h-2 rounded-full transition-transform group-hover:scale-125"
+        style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+      ></div>
+      <span className="text-xs text-white">{label}</span>
+      <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+        {value}
+      </span>
+    </div>
+    <div className="text-[10px] text-gray-500 pl-4">{score}</div>
+  </div>
+);
 export default Charts;

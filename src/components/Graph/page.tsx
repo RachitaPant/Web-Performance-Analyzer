@@ -104,7 +104,7 @@ export const Graph = ({ site, metric, freshAnalysisData }: GraphProps) => {
 
   if (!site) {
     return (
-      <div className="text-center text-gray-400 text-sm mt-4">
+      <div className="dash-card animate-fade-up flex items-center justify-center text-center text-gray-400 text-sm p-8 min-h-[200px]">
         No site selected. Please select a URL to view analytics.
       </div>
     );
@@ -112,17 +112,17 @@ export const Graph = ({ site, metric, freshAnalysisData }: GraphProps) => {
 
   if (graphData.length === 0) {
     return (
-      <div className="text-center text-gray-400 text-sm mt-4">
+      <div className="dash-card animate-fade-up flex items-center justify-center text-center text-gray-400 text-sm p-8 min-h-[200px]">
         No data available for {site}. Try analyzing it first.
       </div>
     );
   }
 
   return (
-    <div className="bg-[#1a2634] rounded-lg p-4">
+    <div className="dash-card animate-fade-up p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-white">Analytics</h3>
-        <button className="h-7 text-xs bg-transparent border border-gray-700 text-gray-400 rounded px-3 flex items-center">
+        <button className="h-7 text-xs bg-transparent border border-blue-500/30 text-gray-400 hover:text-white hover:border-blue-400 transition-colors rounded px-3 flex items-center">
           Site <ChevronDownIcon className="ml-1 w-4 h-4" />
         </button>
       </div>
