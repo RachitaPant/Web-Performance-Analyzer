@@ -11,16 +11,19 @@ export async function POST(req: Request) {
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_API_ENDPOINT}/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_API_ENDPOINT}/api/analyze`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
-        { error: errorData.error },
+        { error: errorData.error || "Failed to analyze URL" },
         { status: response.status }
       );
     }
