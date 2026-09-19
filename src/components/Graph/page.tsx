@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ArrowUp, ArrowDown } from "lucide-react";
 import { db } from "@/lib/firebaseClient";
 import { useAuth } from "@/lib/AuthProvider";
 import {
@@ -133,9 +133,9 @@ export const Graph = ({ site, metric, freshAnalysisData }: GraphProps) => {
         <div className="absolute inset-0">
           <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-gray-500">
             <div>High</div>
-            <div>↑</div>
+            <div><ArrowUp className="w-3 h-3" /></div>
             <div>Mid</div>
-            <div>↓</div>
+            <div><ArrowDown className="w-3 h-3" /></div>
             <div>Low</div>
             <div>0</div>
           </div>

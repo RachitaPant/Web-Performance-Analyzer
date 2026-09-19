@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
 
 /* ------------------------------------------------------------------
    Mini mockups — each one is a tiny abstraction of that step's screen
@@ -114,7 +115,7 @@ function FixMock() {
                     : "bg-white/[0.04] border border-white/10 text-transparent"
                 }`}
             >
-              ✓
+              {done && <Check className="w-2.5 h-2.5" />}
             </span>
             <span
               className={`h-1.5 rounded-full ${done ? "bg-white/[0.07] w-16" : "bg-white/10 w-20"}`}

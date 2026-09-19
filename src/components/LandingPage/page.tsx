@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Zap, Menu, X } from "lucide-react";
+import { Zap, Menu, X, ArrowRight, Smartphone, Monitor, Heart } from "lucide-react";
 import FeatureCarousel from "./FeatureCarousal";
 import HowItWorks from "./HowItWorks";
 import SampleResult from "./SampleResult";
@@ -82,8 +82,8 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-2">
               <Link href="/login" className="hidden sm:block">
-                <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2 rounded-full text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 active:scale-[0.97] transition-all">
-                  Run an Audit →
+                <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2 rounded-full text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 active:scale-[0.97] transition-all inline-flex items-center gap-1.5">
+                  Run an Audit <ArrowRight className="w-4 h-4" />
                 </button>
               </Link>
 
@@ -119,8 +119,8 @@ export default function LandingPage() {
                 </a>
               ))}
               <Link href="/login" onClick={() => setMenuOpen(false)}>
-                <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 transition-all">
-                  Run an Audit →
+                <button className="w-full mt-2 bg-gradient-to-r from-pink-500 to-pink-600 px-5 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/40 transition-all inline-flex items-center justify-center gap-1.5">
+                  Run an Audit <ArrowRight className="w-4 h-4" />
                 </button>
               </Link>
             </div>
@@ -161,9 +161,9 @@ export default function LandingPage() {
                 />
                 <button
                   onClick={handleAnalyze}
-                  className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition"
+                  className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition inline-flex items-center gap-1.5"
                 >
-                  Analyze →
+                  Analyze <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
@@ -176,7 +176,7 @@ export default function LandingPage() {
                       : "bg-blue-950/20 border border-blue-500/30 text-gray-400 hover:border-blue-400"
                   }`}
                 >
-                  📱 Mobile
+                  <Smartphone className="inline h-4 w-4 mr-1.5 -mt-0.5" /> Mobile
                 </button>
                 <button
                   onClick={() => setDevice("desktop")}
@@ -186,7 +186,7 @@ export default function LandingPage() {
                       : "bg-blue-950/20 border border-blue-500/30 text-gray-400 hover:border-blue-400"
                   }`}
                 >
-                  💻 Desktop
+                  <Monitor className="inline h-4 w-4 mr-1.5 -mt-0.5" /> Desktop
                 </button>
               </div>
 
@@ -400,9 +400,9 @@ export default function LandingPage() {
           />
           <button
             onClick={handleCtaAnalyze}
-            className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition"
+            className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition inline-flex items-center gap-1.5"
           >
-            Analyze Now →
+            Analyze Now <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>
@@ -466,7 +466,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-blue-500/20 pt-8 text-center text-sm text-gray-500">
-            <p>Built with ❤️ for a faster web.</p>
+            <p className="inline-flex items-center gap-1.5">Built with <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> for a faster web.</p>
           </div>
         </div>
       </footer>

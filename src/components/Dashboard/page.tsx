@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Zap } from "lucide-react";
 import Header from "../Header/page";
 import StatsCards from "../StatsCards/page";
 import Charts from "../Charts/page";
@@ -28,8 +29,8 @@ export default function Dashboard() {
 
           {!analysisData && (
             <div className="dash-card animate-fade-up flex flex-col items-center justify-center text-center py-20 px-6">
-              <div className="text-5xl mb-4 animate-glow-pulse rounded-full">
-                ⚡
+              <div className="mb-4 animate-glow-pulse rounded-full flex items-center justify-center">
+                <Zap className="w-12 h-12 text-pink-400" />
               </div>
               <h2 className="text-lg font-semibold text-white mb-1">
                 Results will appear here

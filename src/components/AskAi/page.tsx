@@ -1,9 +1,10 @@
 import Image from "next/image"
+import { Sparkles } from "lucide-react"
 const AskAi=()=>{
 return ( <div className="dash-card animate-fade-up p-4" style={{ animationDelay: "160ms" }}>
     <div className="flex items-center justify-between mb-4">
       <h3 className="font-semibold text-white flex items-center gap-2">
-        <span>✨</span> Ask AI
+        <Sparkles className="inline h-4 w-4" /> Ask AI
       </h3>
     </div>
 

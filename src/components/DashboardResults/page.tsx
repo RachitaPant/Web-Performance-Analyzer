@@ -6,6 +6,14 @@ import {
   Save,
   ExternalLink,
   Activity,
+  Smartphone,
+  Monitor,
+  Target,
+  MousePointerClick,
+  Ruler,
+  Timer,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 
 export default function DashboardResults() {
@@ -40,11 +48,11 @@ export default function DashboardResults() {
 
       {/* Device Tabs */}
       <div className="flex gap-2 border-b border-blue-500/20">
-        <button className="px-4 py-3 border-b-2 border-blue-400 text-blue-300 font-semibold">
-          📱 Mobile
+        <button className="px-4 py-3 border-b-2 border-blue-400 text-blue-300 font-semibold inline-flex items-center gap-1.5">
+          <Smartphone className="h-4 w-4" /> Mobile
         </button>
-        <button className="px-4 py-3 text-gray-400 hover:text-white transition">
-          💻 Desktop
+        <button className="px-4 py-3 text-gray-400 hover:text-white transition inline-flex items-center gap-1.5">
+          <Monitor className="h-4 w-4" /> Desktop
         </button>
       </div>
 
@@ -121,28 +129,28 @@ export default function DashboardResults() {
 
         <div className="grid md:grid-cols-4 gap-4">
           <MetricCard
-            icon="🎯"
+            icon={<Target className="w-6 h-6 text-blue-300" />}
             label="LCP"
             value="1.2s"
             description="Largest Contentful Paint"
             status="Good"
           />
           <MetricCard
-            icon="👆"
+            icon={<MousePointerClick className="w-6 h-6 text-blue-300" />}
             label="INP"
             value="89ms"
             description="Interaction to Next Paint"
             status="Good"
           />
           <MetricCard
-            icon="📐"
+            icon={<Ruler className="w-6 h-6 text-blue-300" />}
             label="CLS"
             value="0.03"
             description="Cumulative Layout Shift"
             status="Good"
           />
           <MetricCard
-            icon="⏱️"
+            icon={<Timer className="w-6 h-6 text-blue-300" />}
             label="TBT"
             value="120ms"
             description="Total Blocking Time"
@@ -150,8 +158,8 @@ export default function DashboardResults() {
           />
         </div>
 
-        <a href="#" className="text-blue-400 hover:text-blue-300 transition text-sm inline-block mt-4">
-          Learn more →
+        <a href="#" className="text-blue-400 hover:text-blue-300 transition text-sm inline-flex items-center gap-1 mt-4">
+          Learn more <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
 
@@ -197,7 +205,7 @@ export default function DashboardResults() {
           <p className="text-xs text-gray-400 mb-4">How the analyzed page looks.</p>
           <div className="bg-blue-950/40 rounded-lg p-2 aspect-video flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl mb-2">📱</div>
+              <div className="mb-2 flex justify-center"><Smartphone className="w-6 h-6 text-gray-400" /></div>
               <p className="text-xs text-gray-500">vercel.com preview</p>
             </div>
           </div>
@@ -223,14 +231,14 @@ export default function DashboardResults() {
       {/* Call to Action */}
       <div className="bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 border border-pink-500/30 rounded-xl p-12 text-center">
         <div className="flex justify-center mb-4">
-          <div className="text-5xl">⚡</div>
+          <Zap className="w-12 h-12 text-pink-400" />
         </div>
         <h2 className="text-2xl font-bold mb-2">Turn insights into a faster website.</h2>
         <p className="text-gray-400 mb-6">
           Fix issues, improve user experience and keep tracking progress.
         </p>
-        <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition">
-          Run Another Audit →
+        <button className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/50 transition inline-flex items-center gap-1.5">
+          Run Another Audit <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -301,7 +309,7 @@ function MetricCard({
   description,
   status,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: string;
   description: string;
@@ -309,7 +317,7 @@ function MetricCard({
 }) {
   return (
     <div className="bg-blue-950/30 border border-blue-500/30 rounded-lg p-4">
-      <div className="text-2xl mb-2">{icon}</div>
+      <div className="mb-2">{icon}</div>
       <p className="text-sm font-semibold">{label}</p>
       <p className="text-2xl font-bold text-blue-300 my-1">{value}</p>
       <p className="text-xs text-gray-500 mb-2">{description}</p>

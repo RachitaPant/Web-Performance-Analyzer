@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Rocket, ShieldCheck } from "lucide-react";
 import { auth } from "@/lib/firebaseClient";
 import {
   signInWithEmailAndPassword,
@@ -257,9 +257,9 @@ export default function SitePulseLogin() {
 
         {/* Features List */}
         <div className="mt-12 space-y-3">
-          <FeatureItem icon="⚡" text="No installation required" />
-          <FeatureItem icon="🔒" text="Secure authentication" />
-          <FeatureItem icon="🚀" text="Instant results" />
+          <FeatureItem icon={<Zap className="w-5 h-5 text-blue-400" />} text="No installation required" />
+          <FeatureItem icon={<ShieldCheck className="w-5 h-5 text-blue-400" />} text="Secure authentication" />
+          <FeatureItem icon={<Rocket className="w-5 h-5 text-blue-400" />} text="Instant results" />
         </div>
 
         {/* Footer */}
@@ -282,7 +282,7 @@ export default function SitePulseLogin() {
             href="/"
             className="text-gray-400 hover:text-white transition text-sm inline-flex items-center gap-2"
           >
-            ← Back to homepage
+            <ArrowLeft className="w-4 h-4" /> Back to homepage
           </Link>
         </div>
       </div>
@@ -290,10 +290,10 @@ export default function SitePulseLogin() {
   );
 }
 
-function FeatureItem({ icon, text }: { icon: string; text: string }) {
+function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-blue-950/20 border border-blue-500/10 rounded-lg">
-      <span className="text-lg">{icon}</span>
+      {icon}
       <span className="text-sm text-gray-300">{text}</span>
     </div>
   );

@@ -3,6 +3,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Zap, AlertTriangle } from "lucide-react";
 import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
@@ -355,7 +356,7 @@ const AnalysisFormUI: React.FC<{
   return (
     <div className="w-full mx-auto dash-card animate-fade-up p-6 md:p-8">
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-2xl">⚡</span>
+        <Zap className="w-6 h-6 text-pink-400" />
         <h1 className="text-2xl font-bold text-white">
           Analyze Your Website
         </h1>
@@ -408,7 +409,7 @@ const AnalysisFormUI: React.FC<{
       ) : (
         error && (
           <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 animate-fade-up">
-            <span className="text-red-400 text-base leading-5">⚠️</span>
+            <AlertTriangle className="text-red-400 h-4 w-4 shrink-0 mt-0.5" />
             <p className="text-red-300 text-sm">{error}</p>
           </div>
         )
