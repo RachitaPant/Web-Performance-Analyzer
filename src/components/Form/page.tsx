@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
@@ -69,6 +69,32 @@ interface FormProps {
   setAnalysisData: (data: AnalysisData) => void;
 }
 
+// Maps backend/network errors to short, non-technical messages for end users
+const getFriendlyErrorMessage = (status: number | null, rawMessage?: string): string => {
+  if (status === null) {
+    return "Can't reach the analysis service right now. Check your connection and try again.";
+  }
+  switch (status) {
+    case 400:
+      return rawMessage || "That doesn't look like a valid website URL. Please check it and try again.";
+    case 404:
+      return "The analysis service couldn't be found. Please try again shortly.";
+    case 429:
+      return "We're getting a lot of requests right now. Please wait a few seconds and try again.";
+    case 504:
+      return rawMessage || "This site is taking too long to analyze. It may be slow or too heavy — try a different URL.";
+    case 500:
+    case 502:
+    case 503:
+      return rawMessage || "Something went wrong on our end. Please try again in a moment.";
+    default:
+      return rawMessage || "Something unexpected happened. Please try again.";
+  }
+};
+
+const RETRY_SECONDS = 5;
+const MAX_AUTO_RETRIES = 2;
+
 // Modularized hook for form state and validation
 const useFormState = () => {
   const [url, setUrl] = useState("");
@@ -76,6 +102,7 @@ const useFormState = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [result, setResult] = useState<AnalysisData | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
 
   const isValidUrl = (str: string) => {
     try {
@@ -98,25 +125,25 @@ const useFormState = () => {
     result,
     setResult,
     isValidUrl,
+    retryCountdown,
+    setRetryCountdown,
   };
 };
 
-// Modularized hook for handling analysis submission
+// Modularized hook for handling analysis submission, with auto-retry-with-countdown on rate limits
 const useAnalysisSubmit = (
   url: string,
   setLoading: (loading: boolean) => void,
   setError: (error: string) => void,
   setResult: (result: AnalysisData | null) => void,
   setAnalysisData: (data: AnalysisData) => void,
-  isValidUrl: (str: string) => boolean
+  isValidUrl: (str: string) => boolean,
+  retryCountdown: number | null,
+  setRetryCountdown: (value: number | null) => void
 ) => {
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isValidUrl(url)) {
-      setError("Invalid URL. Please enter a valid website URL.");
-      toast.error("Invalid URL");
-      return;
-    }
+  const retryAttemptsRef = useRef(0);
+
+  const performAnalysis = useCallback(async () => {
     setLoading(true);
     setError("");
     setResult(null);
@@ -128,21 +155,69 @@ const useAnalysisSubmit = (
         body: JSON.stringify({ url }),
       });
 
-      if (!res.ok) throw new Error("Failed to fetch analysis data");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const friendlyMessage = getFriendlyErrorMessage(res.status, body?.error);
+
+        if (res.status === 429 && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
+          retryAttemptsRef.current += 1;
+          setError(friendlyMessage);
+          setLoading(false);
+          setRetryCountdown(RETRY_SECONDS);
+          return;
+        }
+
+        throw new Error(friendlyMessage);
+      }
 
       const analysis_data = await res.json();
       const resultWithUrl: AnalysisData = { ...analysis_data, url };
 
+      retryAttemptsRef.current = 0;
       setResult(resultWithUrl);
       setAnalysisData(resultWithUrl);
+      setError("");
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred.";
+      const isNetworkError = err instanceof TypeError;
+      const errorMessage = isNetworkError
+        ? getFriendlyErrorMessage(null)
+        : err instanceof Error
+          ? err.message
+          : getFriendlyErrorMessage(500);
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
+  }, [url, setLoading, setError, setResult, setAnalysisData, setRetryCountdown]);
+
+  // Ticks the countdown every second; fires the retry once it reaches zero
+  useEffect(() => {
+    if (retryCountdown === null) return;
+
+    if (retryCountdown <= 0) {
+      setRetryCountdown(null);
+      performAnalysis();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setRetryCountdown(retryCountdown - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [retryCountdown, setRetryCountdown, performAnalysis]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValidUrl(url)) {
+      setError("Invalid URL. Please enter a valid website URL.");
+      toast.error("Invalid URL");
+      return;
+    }
+    retryAttemptsRef.current = 0;
+    setRetryCountdown(null);
+    performAnalysis();
   };
 
   return handleSubmit;
@@ -208,6 +283,50 @@ const useSaveSearch = (url: string, setSuccess: (success: boolean) => void) => {
   );
 };
 
+// Circular countdown badge shown while auto-retrying after a rate-limit error
+const RetryCountdown: React.FC<{ secondsLeft: number; total: number }> = ({
+  secondsLeft,
+  total,
+}) => {
+  const radius = 14;
+  const circumference = 2 * Math.PI * radius;
+  const progress = secondsLeft / total;
+
+  return (
+    <div className="mt-4 flex items-center gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 animate-fade-up">
+      <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center">
+        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 32 32">
+          <circle
+            cx="16"
+            cy="16"
+            r={radius}
+            fill="none"
+            stroke="rgba(234,179,8,0.2)"
+            strokeWidth="3"
+          />
+          <circle
+            cx="16"
+            cy="16"
+            r={radius}
+            fill="none"
+            stroke="rgb(234,179,8)"
+            strokeWidth="3"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - progress)}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s linear" }}
+          />
+        </svg>
+        <span className="text-xs font-bold text-yellow-400">{secondsLeft}</span>
+      </div>
+      <p className="text-sm text-yellow-300">
+        Too many requests — retrying automatically in{" "}
+        <span className="font-semibold">{secondsLeft}s</span>...
+      </p>
+    </div>
+  );
+};
+
 // Modularized component for the form UI
 const AnalysisFormUI: React.FC<{
   url: string;
@@ -218,6 +337,7 @@ const AnalysisFormUI: React.FC<{
   handleSubmit: (e: React.FormEvent) => void;
   saveSearch: (result: AnalysisData | null) => void;
   result: AnalysisData | null;
+  retryCountdown: number | null;
 }> = ({
   url,
   setUrl,
@@ -227,6 +347,7 @@ const AnalysisFormUI: React.FC<{
   handleSubmit,
   saveSearch,
   result,
+  retryCountdown,
 }) => {
   const isResultValid = (result: any): result is AnalysisData =>
     result && result.puppeteerData && result.lighthouseData;
@@ -255,7 +376,7 @@ const AnalysisFormUI: React.FC<{
         <div className="flex gap-3">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || retryCountdown !== null}
             className="flex-1 sm:flex-none relative overflow-hidden bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/40 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && (
@@ -266,7 +387,7 @@ const AnalysisFormUI: React.FC<{
           <button
             type="button"
             onClick={() => saveSearch(result)}
-            disabled={!isResultValid(result) || loading}
+            disabled={!isResultValid(result) || loading || retryCountdown !== null}
             className="flex-1 sm:flex-none border border-blue-500/30 text-white px-6 py-3 rounded-lg hover:border-blue-400 hover:bg-blue-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Save
@@ -282,8 +403,15 @@ const AnalysisFormUI: React.FC<{
         </div>
       )}
 
-      {error && (
-        <p className="text-red-400 mt-4 animate-fade-up text-sm">{error}</p>
+      {retryCountdown !== null ? (
+        <RetryCountdown secondsLeft={retryCountdown} total={RETRY_SECONDS} />
+      ) : (
+        error && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 animate-fade-up">
+            <span className="text-red-400 text-base leading-5">⚠️</span>
+            <p className="text-red-300 text-sm">{error}</p>
+          </div>
+        )
       )}
       {success && (
         <p className="text-green-400 mt-4 animate-fade-up text-sm">
@@ -308,6 +436,8 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     result,
     setResult,
     isValidUrl,
+    retryCountdown,
+    setRetryCountdown,
   } = useFormState();
 
   const handleSubmit = useAnalysisSubmit(
@@ -316,7 +446,9 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     setError,
     setResult,
     setAnalysisData,
-    isValidUrl
+    isValidUrl,
+    retryCountdown,
+    setRetryCountdown
   );
 
   const saveSearch = useSaveSearch(url, setSuccess);
@@ -332,6 +464,7 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
         handleSubmit={handleSubmit}
         saveSearch={saveSearch}
         result={result}
+        retryCountdown={retryCountdown}
       />
     </div>
   );
