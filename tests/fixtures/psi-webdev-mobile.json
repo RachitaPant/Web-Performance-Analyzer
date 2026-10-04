@@ -1,0 +1,898 @@
+{
+ "id": "https://web.dev/",
+ "loadingExperience": {
+  "id": "https://web.dev/",
+  "metrics": {
+   "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+    "percentile": 1,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 10,
+      "proportion": 0.869
+     },
+     {
+      "min": 10,
+      "max": 25,
+      "proportion": 0.0606
+     },
+     {
+      "min": 25,
+      "proportion": 0.0703
+     }
+    ],
+    "category": "FAST"
+   },
+   "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+    "percentile": 1720,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 800,
+      "proportion": 0.2496
+     },
+     {
+      "min": 800,
+      "max": 1800,
+      "proportion": 0.5162
+     },
+     {
+      "min": 1800,
+      "proportion": 0.2342
+     }
+    ],
+    "category": "AVERAGE"
+   },
+   "FIRST_CONTENTFUL_PAINT_MS": {
+    "percentile": 3125,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 1800,
+      "proportion": 0.4691
+     },
+     {
+      "min": 1800,
+      "max": 3000,
+      "proportion": 0.2656
+     },
+     {
+      "min": 3000,
+      "proportion": 0.2653
+     }
+    ],
+    "category": "SLOW"
+   },
+   "INTERACTION_TO_NEXT_PAINT": {
+    "percentile": 218,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 200,
+      "proportion": 0.7241
+     },
+     {
+      "min": 200,
+      "max": 500,
+      "proportion": 0.1894
+     },
+     {
+      "min": 500,
+      "proportion": 0.0865
+     }
+    ],
+    "category": "AVERAGE"
+   },
+   "LARGEST_CONTENTFUL_PAINT_MS": {
+    "percentile": 3133,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 2500,
+      "proportion": 0.6591
+     },
+     {
+      "min": 2500,
+      "max": 4000,
+      "proportion": 0.172
+     },
+     {
+      "min": 4000,
+      "proportion": 0.1689
+     }
+    ],
+    "category": "AVERAGE"
+   }
+  },
+  "overall_category": "SLOW",
+  "initial_url": "https://web.dev/"
+ },
+ "originLoadingExperience": {
+  "id": "https://web.dev",
+  "metrics": {
+   "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+    "percentile": 4,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 10,
+      "proportion": 0.7989
+     },
+     {
+      "min": 10,
+      "max": 25,
+      "proportion": 0.1101
+     },
+     {
+      "min": 25,
+      "proportion": 0.091
+     }
+    ],
+    "category": "FAST"
+   },
+   "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+    "percentile": 1971,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 800,
+      "proportion": 0.2712
+     },
+     {
+      "min": 800,
+      "max": 1800,
+      "proportion": 0.4454
+     },
+     {
+      "min": 1800,
+      "proportion": 0.2834
+     }
+    ],
+    "category": "SLOW"
+   },
+   "FIRST_CONTENTFUL_PAINT_MS": {
+    "percentile": 2991,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 1800,
+      "proportion": 0.5032
+     },
+     {
+      "min": 1800,
+      "max": 3000,
+      "proportion": 0.2471
+     },
+     {
+      "min": 3000,
+      "proportion": 0.2497
+     }
+    ],
+    "category": "AVERAGE"
+   },
+   "INTERACTION_TO_NEXT_PAINT": {
+    "percentile": 202,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 200,
+      "proportion": 0.7466
+     },
+     {
+      "min": 200,
+      "max": 500,
+      "proportion": 0.1929
+     },
+     {
+      "min": 500,
+      "proportion": 0.0605
+     }
+    ],
+    "category": "AVERAGE"
+   },
+   "LARGEST_CONTENTFUL_PAINT_MS": {
+    "percentile": 3096,
+    "distributions": [
+     {
+      "min": 0,
+      "max": 2500,
+      "proportion": 0.6553
+     },
+     {
+      "min": 2500,
+      "max": 4000,
+      "proportion": 0.1968
+     },
+     {
+      "min": 4000,
+      "proportion": 0.1479
+     }
+    ],
+    "category": "AVERAGE"
+   }
+  },
+  "overall_category": "SLOW",
+  "initial_url": "https://web.dev/"
+ },
+ "lighthouseResult": {
+  "lighthouseVersion": "13.5.0",
+  "requestedUrl": "https://web.dev/",
+  "finalDisplayedUrl": "https://web.dev/",
+  "fetchTime": "2026-10-04T15:59:26.879Z",
+  "timing": {
+   "total": 28364.3
+  },
+  "categories": {
+   "performance": {
+    "score": 0.53,
+    "auditRefs": [
+     {
+      "id": "cache-insight",
+      "group": "insights"
+     },
+     {
+      "id": "cls-culprits-insight",
+      "group": "insights"
+     },
+     {
+      "id": "document-latency-insight",
+      "group": "insights"
+     },
+     {
+      "id": "dom-size-insight",
+      "group": "insights"
+     },
+     {
+      "id": "duplicated-javascript-insight",
+      "group": "insights"
+     },
+     {
+      "id": "font-display-insight",
+      "group": "insights"
+     },
+     {
+      "id": "forced-reflow-insight",
+      "group": "insights"
+     },
+     {
+      "id": "image-delivery-insight",
+      "group": "insights"
+     },
+     {
+      "id": "inp-breakdown-insight",
+      "group": "insights"
+     },
+     {
+      "id": "lcp-breakdown-insight",
+      "group": "insights"
+     },
+     {
+      "id": "lcp-discovery-insight",
+      "group": "insights"
+     },
+     {
+      "id": "legacy-javascript-insight",
+      "group": "insights"
+     },
+     {
+      "id": "network-dependency-tree-insight",
+      "group": "insights"
+     },
+     {
+      "id": "render-blocking-insight",
+      "group": "insights"
+     },
+     {
+      "id": "third-parties-insight",
+      "group": "insights"
+     },
+     {
+      "id": "viewport-insight",
+      "group": "insights"
+     },
+     {
+      "id": "unminified-css",
+      "group": "diagnostics"
+     },
+     {
+      "id": "unminified-javascript",
+      "group": "diagnostics"
+     },
+     {
+      "id": "unused-css-rules",
+      "group": "diagnostics"
+     },
+     {
+      "id": "unused-javascript",
+      "group": "diagnostics"
+     },
+     {
+      "id": "total-byte-weight",
+      "group": "diagnostics"
+     },
+     {
+      "id": "user-timings",
+      "group": "diagnostics"
+     },
+     {
+      "id": "bootup-time",
+      "group": "diagnostics"
+     },
+     {
+      "id": "mainthread-work-breakdown",
+      "group": "diagnostics"
+     },
+     {
+      "id": "long-tasks",
+      "group": "diagnostics"
+     },
+     {
+      "id": "non-composited-animations",
+      "group": "diagnostics"
+     },
+     {
+      "id": "unsized-images",
+      "group": "diagnostics"
+     }
+    ]
+   },
+   "accessibility": {
+    "score": 0.9
+   },
+   "best-practices": {
+    "score": 0.96
+   },
+   "seo": {
+    "score": 0.92
+   }
+  },
+  "audits": {
+   "first-contentful-paint": {
+    "id": "first-contentful-paint",
+    "title": "First Contentful Paint",
+    "score": 0.25,
+    "scoreDisplayMode": "numeric",
+    "numericValue": 3905.7296389195462,
+    "displayValue": "3.9 s"
+   },
+   "largest-contentful-paint": {
+    "id": "largest-contentful-paint",
+    "title": "Largest Contentful Paint",
+    "score": 0.52,
+    "scoreDisplayMode": "numeric",
+    "numericValue": 3905.7296389195462,
+    "displayValue": "3.9 s"
+   },
+   "total-blocking-time": {
+    "id": "total-blocking-time",
+    "title": "Total Blocking Time",
+    "score": 0.29,
+    "scoreDisplayMode": "numeric",
+    "numericValue": 963,
+    "displayValue": "960 ms"
+   },
+   "cumulative-layout-shift": {
+    "id": "cumulative-layout-shift",
+    "title": "Cumulative Layout Shift",
+    "score": 0.85,
+    "scoreDisplayMode": "numeric",
+    "numericValue": 0.11850074289520451,
+    "displayValue": "0.119",
+    "details": {
+     "type": "debugdata"
+    }
+   },
+   "speed-index": {
+    "id": "speed-index",
+    "title": "Speed Index",
+    "score": 0.8,
+    "scoreDisplayMode": "numeric",
+    "numericValue": 4047.2629548457007,
+    "displayValue": "4.0 s"
+   },
+   "server-response-time": {
+    "id": "server-response-time",
+    "title": "Initial server response time was short",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 4,
+    "displayValue": "Root document took 0 ms",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "opportunity",
+     "overallSavingsMs": 0
+    }
+   },
+   "resource-summary": {
+    "id": "resource-summary",
+    "title": "Resources Summary",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "details": {
+     "type": "table",
+     "items": [
+      {
+       "label": "Total",
+       "transferSize": 3705353,
+       "resourceType": "total",
+       "requestCount": 88
+      },
+      {
+       "label": "Script",
+       "requestCount": 48,
+       "resourceType": "script",
+       "transferSize": 2224840
+      },
+      {
+       "requestCount": 12,
+       "resourceType": "font",
+       "transferSize": 552121,
+       "label": "Font"
+      },
+      {
+       "label": "Stylesheet",
+       "transferSize": 408707,
+       "resourceType": "stylesheet",
+       "requestCount": 10
+      },
+      {
+       "resourceType": "other",
+       "transferSize": 360764,
+       "label": "Other",
+       "requestCount": 7
+      },
+      {
+       "transferSize": 91684,
+       "resourceType": "image",
+       "requestCount": 7,
+       "label": "Image"
+      },
+      {
+       "transferSize": 67237,
+       "resourceType": "document",
+       "requestCount": 4,
+       "label": "Document"
+      },
+      {
+       "requestCount": 0,
+       "transferSize": 0,
+       "resourceType": "media",
+       "label": "Media"
+      },
+      {
+       "resourceType": "third-party",
+       "transferSize": 3594909,
+       "requestCount": 80,
+       "label": "Third-party"
+      }
+     ]
+    }
+   },
+   "third-parties-insight": {
+    "id": "third-parties-insight",
+    "title": "3rd parties",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "details": {
+     "type": "table",
+     "items": [
+      {
+       "entity": "Google CDN",
+       "transferSize": 2023362,
+       "mainThreadTime": 1202.0720016360283
+      },
+      {
+       "entity": "Google Tag Manager",
+       "transferSize": 597689,
+       "mainThreadTime": 565.2850004434586
+      },
+      {
+       "entity": "Other Google APIs/SDKs",
+       "transferSize": 34687,
+       "mainThreadTime": 72.40700006484985
+      },
+      {
+       "entity": "appspot.com",
+       "transferSize": 11717,
+       "mainThreadTime": 13.481000006198883
+      },
+      {
+       "entity": "Unpkg",
+       "transferSize": 6301,
+       "mainThreadTime": 5.226999938488007
+      },
+      {
+       "entity": "Google Fonts",
+       "transferSize": 562493,
+       "mainThreadTime": 0
+      },
+      {
+       "entity": "Google Analytics",
+       "transferSize": 1582,
+       "mainThreadTime": 0
+      }
+     ]
+    }
+   },
+   "mainthread-work-breakdown": {
+    "id": "mainthread-work-breakdown",
+    "title": "Minimize main-thread work",
+    "score": 0,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 4329.574799999969,
+    "displayValue": "4.3 s",
+    "metricSavings": {
+     "TBT": 950
+    },
+    "details": {
+     "type": "table",
+     "items": [
+      {
+       "duration": 2221.682399999974,
+       "groupLabel": "Script Evaluation",
+       "group": "scriptEvaluation"
+      },
+      {
+       "duration": 831.7859999999994,
+       "group": "scriptParseCompile",
+       "groupLabel": "Script Parsing & Compilation"
+      },
+      {
+       "duration": 557.8139999999997,
+       "groupLabel": "Style & Layout",
+       "group": "styleLayout"
+      },
+      {
+       "groupLabel": "Other",
+       "group": "other",
+       "duration": 467.86199999999565
+      },
+      {
+       "duration": 97.94160000000001,
+       "groupLabel": "Garbage Collection",
+       "group": "garbageCollection"
+      },
+      {
+       "groupLabel": "Parse HTML & CSS",
+       "duration": 93.28680000000008,
+       "group": "parseHTML"
+      },
+      {
+       "duration": 59.202000000000126,
+       "group": "paintCompositeRender",
+       "groupLabel": "Rendering"
+      }
+     ]
+    }
+   },
+   "bootup-time": {
+    "id": "bootup-time",
+    "title": "Reduce JavaScript execution time",
+    "score": 0,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 2794.6355999999964,
+    "displayValue": "2.8 s",
+    "metricSavings": {
+     "TBT": 1050
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "total-byte-weight": {
+    "id": "total-byte-weight",
+    "title": "Avoid enormous network payloads",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 3705353,
+    "displayValue": "Total size was 3,619 KiB",
+    "details": {
+     "type": "table"
+    }
+   },
+   "dom-size-insight": {
+    "id": "dom-size-insight",
+    "title": "Optimize DOM size",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "numericValue": 838,
+    "metricSavings": {
+     "INP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "final-screenshot": {
+    "id": "final-screenshot",
+    "title": "Final Screenshot",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "details": {
+     "type": "screenshot",
+     "data": "data:image/jpeg;base64,FIXTURE"
+    }
+   },
+   "cache-insight": {
+    "id": "cache-insight",
+    "title": "Use efficient cache lifetimes",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "displayValue": "Est savings of 0 KiB",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "cls-culprits-insight": {
+    "id": "cls-culprits-insight",
+    "title": "Layout shift culprits",
+    "score": 0,
+    "scoreDisplayMode": "numeric",
+    "metricSavings": {
+     "CLS": 0
+    },
+    "details": {
+     "type": "list"
+    }
+   },
+   "document-latency-insight": {
+    "id": "document-latency-insight",
+    "title": "Document request latency",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "checklist"
+    }
+   },
+   "duplicated-javascript-insight": {
+    "id": "duplicated-javascript-insight",
+    "title": "Duplicated JavaScript",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "font-display-insight": {
+    "id": "font-display-insight",
+    "title": "Font display",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "displayValue": "Est savings of 10 ms",
+    "metricSavings": {
+     "FCP": 0,
+     "INP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "forced-reflow-insight": {
+    "id": "forced-reflow-insight",
+    "title": "Forced reflow",
+    "score": 0,
+    "scoreDisplayMode": "numeric",
+    "details": {
+     "type": "list"
+    }
+   },
+   "image-delivery-insight": {
+    "id": "image-delivery-insight",
+    "title": "Improve image delivery",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "displayValue": "Est savings of 49 KiB",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "inp-breakdown-insight": {
+    "id": "inp-breakdown-insight",
+    "title": "INP breakdown",
+    "score": null,
+    "scoreDisplayMode": "notApplicable"
+   },
+   "lcp-breakdown-insight": {
+    "id": "lcp-breakdown-insight",
+    "title": "LCP breakdown",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "metricSavings": {
+     "LCP": 0
+    },
+    "details": {
+     "type": "list"
+    }
+   },
+   "lcp-discovery-insight": {
+    "id": "lcp-discovery-insight",
+    "title": "LCP request discovery",
+    "score": null,
+    "scoreDisplayMode": "notApplicable"
+   },
+   "legacy-javascript-insight": {
+    "id": "legacy-javascript-insight",
+    "title": "Legacy JavaScript",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "network-dependency-tree-insight": {
+    "id": "network-dependency-tree-insight",
+    "title": "Network dependency tree",
+    "score": 0,
+    "scoreDisplayMode": "numeric",
+    "metricSavings": {
+     "LCP": 0
+    },
+    "details": {
+     "type": "list"
+    }
+   },
+   "render-blocking-insight": {
+    "id": "render-blocking-insight",
+    "title": "Render-blocking requests",
+    "score": 0,
+    "scoreDisplayMode": "metricSavings",
+    "displayValue": "Est savings of 2,310 ms",
+    "metricSavings": {
+     "LCP": 2300,
+     "FCP": 2300
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "viewport-insight": {
+    "id": "viewport-insight",
+    "title": "Optimize viewport for mobile",
+    "score": 1,
+    "scoreDisplayMode": "numeric",
+    "metricSavings": {
+     "INP": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "unminified-css": {
+    "id": "unminified-css",
+    "title": "Minify CSS",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 0,
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "opportunity",
+     "overallSavingsMs": 0,
+     "overallSavingsBytes": 0
+    }
+   },
+   "unminified-javascript": {
+    "id": "unminified-javascript",
+    "title": "Minify JavaScript",
+    "score": 1,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 0,
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "opportunity",
+     "overallSavingsMs": 0,
+     "overallSavingsBytes": 0
+    }
+   },
+   "unused-css-rules": {
+    "id": "unused-css-rules",
+    "title": "Reduce unused CSS",
+    "score": 0,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 450,
+    "displayValue": "Est savings of 140 KiB",
+    "metricSavings": {
+     "LCP": 450,
+     "FCP": 450
+    },
+    "details": {
+     "type": "opportunity",
+     "overallSavingsMs": 450,
+     "overallSavingsBytes": 143734
+    }
+   },
+   "unused-javascript": {
+    "id": "unused-javascript",
+    "title": "Reduce unused JavaScript",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "numericValue": 0,
+    "displayValue": "Est savings of 1,065 KiB",
+    "metricSavings": {
+     "LCP": 0,
+     "FCP": 0
+    },
+    "details": {
+     "type": "opportunity",
+     "overallSavingsMs": 0,
+     "overallSavingsBytes": 1090480
+    }
+   },
+   "user-timings": {
+    "id": "user-timings",
+    "title": "User Timing marks and measures",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "displayValue": "7 user timings",
+    "details": {
+     "type": "table"
+    }
+   },
+   "long-tasks": {
+    "id": "long-tasks",
+    "title": "Avoid long main-thread tasks",
+    "score": 1,
+    "scoreDisplayMode": "informative",
+    "displayValue": "19 long tasks found",
+    "metricSavings": {
+     "TBT": 950
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "non-composited-animations": {
+    "id": "non-composited-animations",
+    "title": "Avoid non-composited animations",
+    "score": null,
+    "scoreDisplayMode": "notApplicable",
+    "metricSavings": {
+     "CLS": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   },
+   "unsized-images": {
+    "id": "unsized-images",
+    "title": "Image elements do not have explicit `width` and `height`",
+    "score": 0.5,
+    "scoreDisplayMode": "metricSavings",
+    "metricSavings": {
+     "CLS": 0
+    },
+    "details": {
+     "type": "table"
+    }
+   }
+  }
+ }
+}

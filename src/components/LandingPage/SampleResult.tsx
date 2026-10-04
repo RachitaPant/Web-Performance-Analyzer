@@ -166,8 +166,8 @@ function ScoreRing({ score }: { score: number }) {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setShown(score);
-      return;
+      const frame = requestAnimationFrame(() => setShown(score));
+      return () => cancelAnimationFrame(frame);
     }
     let raf: number;
     const start = performance.now();

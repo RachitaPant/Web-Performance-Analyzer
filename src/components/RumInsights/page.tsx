@@ -1,103 +1,82 @@
-import Image from "next/image"
-interface RUMStatsProps {
-DOMContentLoadTime:number,
-thirdPartyRequestCount:number,
-totalDOMNodes:number,
+import type { FieldMetric, Report } from "@/lib/report";
+import { RATING_STYLES, formatMs } from "@/lib/format";
+
+interface RUMInsightsProps {
+  field: Report["field"];
 }
-const  RUMInsights: React.FC<RUMStatsProps>= ({ DOMContentLoadTime,
-  thirdPartyRequestCount,
-  totalDOMNodes}) => {
 
-return ( <div className="dash-card animate-fade-up p-4 lg:col-span-2" style={{ animationDelay: "80ms" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">Real User Experience(RUM)-style Insights</h3>
+const ROWS: { key: keyof NonNullable<Report["field"]>; name: string; desc: string; core: boolean }[] = [
+  { key: "lcp", name: "LCP", desc: "Largest Contentful Paint", core: true },
+  { key: "inp", name: "INP", desc: "Interaction to Next Paint", core: true },
+  { key: "cls", name: "CLS", desc: "Cumulative Layout Shift", core: true },
+  { key: "fcp", name: "FCP", desc: "First Contentful Paint", core: false },
+  { key: "ttfb", name: "TTFB", desc: "Time to First Byte", core: false },
+];
 
-          </div>
+const formatField = (key: string, m: FieldMetric) => (key === "cls" ? m.p75.toFixed(2) : formatMs(m.p75));
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs text-gray-400 border-b border-blue-500/20">
-                  <th className="pb-2 text-left font-medium">METRIC</th>
-                  <th className="pb-2 text-left font-medium">VALUE</th>
+// Real-user (CrUX) 75th-percentile data over the last 28 days, as returned by PageSpeed Insights.
+const RUMInsights: React.FC<RUMInsightsProps> = ({ field }) => {
+  return (
+    <div className="dash-card animate-fade-up p-4 lg:col-span-2" style={{ animationDelay: "80ms" }}>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="font-semibold text-white">Real-User Experience (CrUX)</h3>
+        {field && (
+          <span className="text-[10px] text-gray-500">
+            {field.scope === "url" ? "This URL" : "Whole origin"} · p75 · last 28 days
+          </span>
+        )}
+      </div>
 
-                  <th className="pb-2 text-left font-medium">UNIT</th>
-                  <th className="pb-2 text-left font-medium">info</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-blue-500/10 hover:bg-blue-500/5 transition-colors">
-                  <td className="py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
-                        <Image
-                          src="/images/dashboard/clock.png"
-                          alt="DOM Conetnt Time"
-                          width={32}
-                          height={32}
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="text-xs text-white">
-                       DOM Content Loaded Time
-                        <div className="text-gray-400">info</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 text-xs text-white">{DOMContentLoadTime}</td>
+      {!field ? (
+        <p className="text-sm text-gray-400 py-8 text-center">
+          Not enough real-user traffic in the Chrome UX Report for this site yet — only lab data is available.
+        </p>
+      ) : (
+        <div className="overflow-x-auto mt-3">
+          <table className="w-full">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-blue-500/20">
+                <th className="pb-2 text-left font-medium">METRIC</th>
+                <th className="pb-2 text-left font-medium">P75</th>
+                <th className="pb-2 text-left font-medium">RATING</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ROWS.map(({ key, name, desc, core }) => {
+                const m = field[key] as FieldMetric | null;
+                const style = m ? RATING_STYLES[m.rating] : null;
+                return (
+                  <tr key={key} className="border-b border-blue-500/10 last:border-0 hover:bg-blue-500/5 transition-colors">
+                    <td className="py-3 text-xs text-white">
+                      {name}
+                      {core && (
+                        <span className="ml-2 rounded bg-blue-500/15 px-1.5 py-0.5 text-[9px] text-blue-300">
+                          Core Web Vital
+                        </span>
+                      )}
+                      <div className="text-gray-400">{desc}</div>
+                    </td>
+                    <td className="py-3 text-sm font-semibold text-white">{m ? formatField(key, m) : "N/A"}</td>
+                    <td className="py-3 text-xs">
+                      {style ? (
+                        <span className={`inline-flex items-center gap-1.5 ${style.text}`}>
+                          <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+                          {style.label}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">No data</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
 
-                  <td className="py-3 text-xs text-white">ms</td>
-                  <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
-                </tr>
-                <tr className="border-b border-blue-500/10 hover:bg-blue-500/5 transition-colors">
-                  <td className="py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
-                        <Image
-                          src="/images/dashboard/numbers.png"
-                          alt="Olivia Super Push-up Bra"
-                          width={32}
-                          height={32}
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="text-xs text-white">
-                       Total DOM Nodes
-                        <div className="text-gray-400">info</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 text-xs text-white">{totalDOMNodes}</td>
-
-                  <td className="py-3 text-xs text-white">nodes</td>
-                  <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
-                </tr>
-                <tr className="hover:bg-blue-500/5 transition-colors">
-                  <td className="py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-500/10 rounded-md overflow-hidden flex items-center justify-center">
-                        <Image
-                          src="/images/dashboard/counter.png"
-                          alt="Hammered Drop Earrings"
-                          width={32}
-                          height={32}
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="text-xs text-white">
-                       Third Party request counts
-                        <div className="text-gray-400">info</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 text-xs text-white">{thirdPartyRequestCount}</td>
-
-                  <td className="py-3 text-xs text-white">reqs</td>
-                  <td className="py-3 text-xs text-white"><p className="bg-white rounded-full w-4 text-black text-center">i</p></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>)
-}
 export default RUMInsights;

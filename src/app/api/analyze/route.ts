@@ -1,39 +1,32 @@
 import { NextResponse } from "next/server";
+import { AnalyzeRequestSchema } from "@/lib/report";
+import { AnalysisError, fetchPageSpeed, normalizeUrl } from "@/server/pagespeed";
+import { transformPageSpeed } from "@/server/transformPageSpeed";
+
+// Must exceed PSI_TIMEOUT_MS (100s) so slow audits fail with a friendly 504, not a platform kill.
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
-  const { url } = await req.json();
-
-  if (!url || !url.startsWith("http")) {
+  const body = await req.json().catch(() => null);
+  const parsed = AnalyzeRequestSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Valid URL is required" },
+      { error: parsed.error.issues[0]?.message ?? "Invalid request" },
       { status: 400 }
     );
   }
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_API_ENDPOINT}/api/analyze`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return NextResponse.json(
-        { error: errorData.error || "Failed to analyze URL" },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    const url = normalizeUrl(parsed.data.url);
+    const psi = await fetchPageSpeed(url, parsed.data.strategy);
+    return NextResponse.json(transformPageSpeed(psi, url, parsed.data.strategy));
   } catch (error) {
-    console.error("Next.js API error:", error);
+    if (error instanceof AnalysisError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    console.error("Unexpected analyze error:", error);
     return NextResponse.json(
-      { error: "Failed to connect to analysis backend" },
+      { error: "Something went wrong on our end. Please try again in a moment." },
       { status: 500 }
     );
   }
