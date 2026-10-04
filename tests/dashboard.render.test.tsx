@@ -5,11 +5,12 @@ import BottomStats from "@/components/BottomStats/page";
 import { transformPageSpeed, type PsiResponse } from "@/server/transformPageSpeed";
 
 // next/image needs the Next runtime; a plain <img> is enough to assert on.
+type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement> & { unoptimized?: boolean };
 jest.mock("next/image", () => ({
   __esModule: true,
-  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-  default: ({ unoptimized: _, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { unoptimized?: boolean }) => (
-    <img {...props} />
+  default: ({ src, alt }: MockImageProps) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} />
   ),
 }));
 
