@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // The single contract between the PageSpeed transform, the API route and the UI.
 // Bump REPORT_SCHEMA_VERSION whenever the shape changes so saved history can be migrated.
-export const REPORT_SCHEMA_VERSION = 1;
+export const REPORT_SCHEMA_VERSION = 2;
 
 export const STRATEGIES = ["mobile", "desktop"] as const;
 export const StrategySchema = z.enum(STRATEGIES);
@@ -27,6 +27,25 @@ const FieldMetricSchema = z.object({
 export type FieldMetric = z.infer<typeof FieldMetricSchema>;
 
 const CategoryScore = z.number().min(0).max(100).nullable();
+
+// Each data source can fail independently; the report ships with whatever succeeded.
+export const SOURCE_IDS = ["pagespeed", "cruxHistory", "observatory"] as const;
+export type SourceId = (typeof SOURCE_IDS)[number];
+const SourceStatusSchema = z.object({
+  status: z.enum(["ok", "unavailable", "error"]),
+  message: z.string().nullable(),
+  ms: z.number().nullable(),
+});
+export type SourceStatus = z.infer<typeof SourceStatusSchema>;
+
+// One CrUX collection period (28-day window ending on `end`), p75 values.
+const FieldHistoryWeekSchema = z.object({
+  end: z.string(),
+  lcp: z.number().nullable(),
+  inp: z.number().nullable(),
+  cls: z.number().nullable(),
+});
+export type FieldHistoryWeek = z.infer<typeof FieldHistoryWeekSchema>;
 
 export const ReportSchema = z.object({
   schemaVersion: z.literal(REPORT_SCHEMA_VERSION),
@@ -64,6 +83,27 @@ export const ReportSchema = z.object({
       ttfb: FieldMetricSchema.nullable(),
     })
     .nullable(),
+
+  // Weekly CrUX p75 trend (~6 months). null when the source failed or has no data.
+  fieldHistory: z
+    .object({
+      scope: z.enum(["url", "origin"]),
+      weeks: z.array(FieldHistoryWeekSchema),
+    })
+    .nullable(),
+
+  // Mozilla HTTP Observatory security-header grade.
+  security: z
+    .object({
+      grade: z.string(),
+      score: z.number(),
+      testsPassed: z.number(),
+      testsFailed: z.number(),
+      detailsUrl: z.string(),
+    })
+    .nullable(),
+
+  sources: z.record(z.enum(SOURCE_IDS), SourceStatusSchema),
 
   diagnostics: z.object({
     domSize: z.number().nullable(),
@@ -117,6 +157,8 @@ export const AnalyzeRequestSchema = z.object(
     strategy: z
       .enum(STRATEGIES, { error: 'Device must be "mobile" or "desktop".' })
       .default("mobile"),
+    // Skip the cache and force a new PageSpeed run.
+    refresh: z.boolean().default(false),
   },
   { error: "Request body must be JSON with a url field." }
 );

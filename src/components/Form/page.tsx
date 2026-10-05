@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Zap, AlertTriangle, Smartphone, Monitor } from "lucide-react";
+import { Zap, AlertTriangle, Smartphone, Monitor, History } from "lucide-react";
 import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
@@ -11,6 +11,12 @@ import { ReportSchema, toHistorySnapshot, type Report, type Strategy } from "@/l
 interface FormProps {
   setReport: (data: Report) => void;
 }
+
+// How long ago a cached report was generated, e.g. "12 min ago".
+const timeAgo = (iso: string) => {
+  const minutes = Math.round((Date.now() - Date.parse(iso)) / 60_000);
+  return minutes < 1 ? "just now" : minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} h ago`;
+};
 
 // Maps backend/network errors to short, non-technical messages for end users
 const getFriendlyErrorMessage = (status: number | null, rawMessage?: string): string => {
@@ -23,7 +29,7 @@ const getFriendlyErrorMessage = (status: number | null, rawMessage?: string): st
     case 404:
       return "The analysis service couldn't be found. Please try again shortly.";
     case 429:
-      return "We're getting a lot of requests right now. Please wait a few seconds and try again.";
+      return rawMessage || "We're getting a lot of requests right now. Please wait a few seconds and try again.";
     case 504:
       return rawMessage || "This site is taking too long to analyze. It may be slow or too heavy — try a different URL.";
     case 500:
@@ -47,6 +53,7 @@ const useFormState = () => {
   const [result, setResult] = useState<Report | null>(null);
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
   const [strategy, setStrategy] = useState<Strategy>("mobile");
+  const [fromCache, setFromCache] = useState(false);
 
   // Bare domains are fine ("example.com"); the API normalizes and does the real validation.
   const isValidUrl = (str: string) => {
@@ -75,6 +82,8 @@ const useFormState = () => {
     isValidUrl,
     retryCountdown,
     setRetryCountdown,
+    fromCache,
+    setFromCache,
   };
 };
 
@@ -88,9 +97,11 @@ const useAnalysisSubmit = (
   setReport: (data: Report) => void,
   isValidUrl: (str: string) => boolean,
   retryCountdown: number | null,
-  setRetryCountdown: (value: number | null) => void
+  setRetryCountdown: (value: number | null) => void,
+  setFromCache: (fromCache: boolean) => void
 ) => {
   const retryAttemptsRef = useRef(0);
+  const refreshRef = useRef(false);
 
   const performAnalysis = useCallback(async () => {
     setLoading(true);
@@ -101,14 +112,16 @@ const useAnalysisSubmit = (
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim(), strategy }),
+        body: JSON.stringify({ url: url.trim(), strategy, refresh: refreshRef.current }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         const friendlyMessage = getFriendlyErrorMessage(res.status, body?.error);
+        // Only auto-retry short upstream throttling; our own quota limit says how long to wait.
+        const shortWait = !(body?.retryAfterSeconds > RETRY_SECONDS);
 
-        if (res.status === 429 && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
+        if (res.status === 429 && shortWait && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
           retryAttemptsRef.current += 1;
           setError(friendlyMessage);
           setLoading(false);
@@ -126,6 +139,7 @@ const useAnalysisSubmit = (
       }
 
       retryAttemptsRef.current = 0;
+      setFromCache(res.headers.get("X-Cache") === "HIT");
       setResult(parsed.data);
       setReport(parsed.data);
       setError("");
@@ -141,7 +155,7 @@ const useAnalysisSubmit = (
     } finally {
       setLoading(false);
     }
-  }, [url, strategy, setLoading, setError, setResult, setReport, setRetryCountdown]);
+  }, [url, strategy, setLoading, setError, setResult, setReport, setRetryCountdown, setFromCache]);
 
   // Ticks the countdown every second; fires the retry once it reaches zero
   useEffect(() => {
@@ -168,11 +182,20 @@ const useAnalysisSubmit = (
       return;
     }
     retryAttemptsRef.current = 0;
+    refreshRef.current = false;
     setRetryCountdown(null);
     performAnalysis();
   };
 
-  return handleSubmit;
+  // Re-runs the current URL, bypassing the server-side report cache.
+  const rerunFresh = () => {
+    retryAttemptsRef.current = 0;
+    refreshRef.current = true;
+    setRetryCountdown(null);
+    performAnalysis();
+  };
+
+  return { handleSubmit, rerunFresh };
 };
 
 // Modularized hook for saving search to Firebase
@@ -298,6 +321,8 @@ const AnalysisFormUI: React.FC<{
   saveSearch: (result: Report | null) => void;
   result: Report | null;
   retryCountdown: number | null;
+  fromCache: boolean;
+  rerunFresh: () => void;
 }> = ({
   url,
   setUrl,
@@ -310,6 +335,8 @@ const AnalysisFormUI: React.FC<{
   saveSearch,
   result,
   retryCountdown,
+  fromCache,
+  rerunFresh,
 }) => {
   return (
     <div className="w-full mx-auto dash-card animate-fade-up p-6 md:p-8">
@@ -365,6 +392,16 @@ const AnalysisFormUI: React.FC<{
         </div>
       )}
 
+      {fromCache && result && !loading && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400 animate-fade-up">
+          <History className="h-3.5 w-3.5" />
+          <span>Showing a cached result from {timeAgo(result.fetchedAt)}.</span>
+          <button type="button" onClick={rerunFresh} className="text-blue-300 hover:text-blue-200 underline underline-offset-2">
+            Run a fresh audit
+          </button>
+        </div>
+      )}
+
       {retryCountdown !== null ? (
         <RetryCountdown secondsLeft={retryCountdown} total={RETRY_SECONDS} />
       ) : (
@@ -402,9 +439,11 @@ const Form: React.FC<FormProps> = ({ setReport }) => {
     isValidUrl,
     retryCountdown,
     setRetryCountdown,
+    fromCache,
+    setFromCache,
   } = useFormState();
 
-  const handleSubmit = useAnalysisSubmit(
+  const { handleSubmit, rerunFresh } = useAnalysisSubmit(
     url,
     strategy,
     setLoading,
@@ -413,7 +452,8 @@ const Form: React.FC<FormProps> = ({ setReport }) => {
     setReport,
     isValidUrl,
     retryCountdown,
-    setRetryCountdown
+    setRetryCountdown,
+    setFromCache
   );
 
   const saveSearch = useSaveSearch(setSuccess);
@@ -432,6 +472,8 @@ const Form: React.FC<FormProps> = ({ setReport }) => {
         saveSearch={saveSearch}
         result={result}
         retryCountdown={retryCountdown}
+        fromCache={fromCache}
+        rerunFresh={rerunFresh}
       />
     </div>
   );

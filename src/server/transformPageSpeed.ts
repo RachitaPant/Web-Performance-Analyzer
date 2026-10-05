@@ -58,6 +58,9 @@ export interface PsiResponse {
   };
 }
 
+// The part of a Report derived from PageSpeed alone; other sources are merged in by analyze().
+export type PageSpeedReport = Omit<Report, "fieldHistory" | "security" | "sources">;
+
 const MAX_OPPORTUNITIES = 10;
 // Opportunity ranking only compares time-based savings; CLS/INP savings use other units.
 const TIME_SAVINGS_KEYS = ["LCP", "FCP", "TBT"];
@@ -192,7 +195,7 @@ export const transformPageSpeed = (
   psi: PsiResponse,
   requestedUrl: string,
   strategy: Strategy
-): Report => {
+): PageSpeedReport => {
   const lh = psi.lighthouseResult;
   const { audits, categories } = lh;
 

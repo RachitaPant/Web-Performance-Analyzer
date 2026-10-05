@@ -8,8 +8,9 @@ const psi = fixture as unknown as PsiResponse;
 const report = transformPageSpeed(psi, "https://web.dev/", "mobile");
 
 describe("transformPageSpeed", () => {
-  test("produces a report that satisfies ReportSchema", () => {
-    expect(() => ReportSchema.parse(report)).not.toThrow();
+  test("produces the PageSpeed part of a valid Report", () => {
+    const schema = ReportSchema.omit({ fieldHistory: true, security: true, sources: true });
+    expect(() => schema.parse(report)).not.toThrow();
   });
 
   test("maps category scores to 0–100", () => {

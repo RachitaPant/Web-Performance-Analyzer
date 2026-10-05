@@ -19,7 +19,7 @@ const formatField = (key: string, m: FieldMetric) => (key === "cls" ? m.p75.toFi
 const RUMInsights: React.FC<RUMInsightsProps> = ({ field }) => {
   return (
     <div className="dash-card animate-fade-up p-4 lg:col-span-2" style={{ animationDelay: "80ms" }}>
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-1">
         <h3 className="font-semibold text-white">Real-User Experience (CrUX)</h3>
         {field && (
           <span className="text-[10px] text-gray-500">
