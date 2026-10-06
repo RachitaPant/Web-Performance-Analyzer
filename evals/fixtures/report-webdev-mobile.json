@@ -1,0 +1,332 @@
+{
+ "schemaVersion": 2,
+ "url": "https://web.dev/",
+ "finalUrl": "https://web.dev/",
+ "strategy": "mobile",
+ "fetchedAt": "2026-10-06T04:12:18.485Z",
+ "lighthouseVersion": "13.5.0",
+ "analysisMs": 23637,
+ "categories": {
+  "performance": 52,
+  "accessibility": 90,
+  "bestPractices": 96,
+  "seo": 92
+ },
+ "lab": {
+  "fcp": {
+   "value": 3934.89804325021,
+   "displayValue": "3.9 s",
+   "score": 0.24
+  },
+  "lcp": {
+   "value": 3934.89804325021,
+   "displayValue": "3.9 s",
+   "score": 0.51
+  },
+  "tbt": {
+   "value": 1027,
+   "displayValue": "1,030 ms",
+   "score": 0.26
+  },
+  "cls": {
+   "value": 0.11904307875536294,
+   "displayValue": "0.119",
+   "score": 0.85
+  },
+  "speedIndex": {
+   "value": 3935.1873499265344,
+   "displayValue": "3.9 s",
+   "score": 0.82
+  },
+  "ttfb": {
+   "value": 3,
+   "displayValue": "Root document took 0 ms",
+   "score": 1
+  }
+ },
+ "field": {
+  "scope": "url",
+  "lcp": {
+   "p75": 3139,
+   "rating": "needs-improvement"
+  },
+  "inp": {
+   "p75": 218,
+   "rating": "needs-improvement"
+  },
+  "cls": {
+   "p75": 0.01,
+   "rating": "good"
+  },
+  "fcp": {
+   "p75": 3133,
+   "rating": "poor"
+  },
+  "ttfb": {
+   "p75": 1718,
+   "rating": "needs-improvement"
+  }
+ },
+ "fieldHistory": null,
+ "security": {
+  "grade": "A+",
+  "score": 100,
+  "testsPassed": 11,
+  "testsFailed": 1,
+  "detailsUrl": "https://developer.mozilla.org/en-US/observatory/analyze?host=web.dev"
+ },
+ "sources": {
+  "pagespeed": {
+   "status": "ok",
+   "message": null,
+   "ms": 25940
+  },
+  "cruxHistory": {
+   "status": "unavailable",
+   "message": "Chrome UX Report API isn't enabled for this API key. Enable it in Google Cloud to see trends.",
+   "ms": 426
+  },
+  "observatory": {
+   "status": "ok",
+   "message": null,
+   "ms": 2153
+  }
+ },
+ "diagnostics": {
+  "domSize": 838,
+  "requestCount": 88,
+  "totalBytes": 3706044,
+  "thirdPartyRequests": 80,
+  "thirdPartyBytes": 3595629,
+  "mainThreadMs": 3978.08759999997,
+  "jsBootupMs": 2679.544799999998,
+  "resources": [
+   {
+    "type": "script",
+    "label": "Script",
+    "requests": 48,
+    "bytes": 2225059
+   },
+   {
+    "type": "font",
+    "label": "Font",
+    "requests": 12,
+    "bytes": 552121
+   },
+   {
+    "type": "stylesheet",
+    "label": "Stylesheet",
+    "requests": 10,
+    "bytes": 408887
+   },
+   {
+    "type": "other",
+    "label": "Other",
+    "requests": 7,
+    "bytes": 360740
+   },
+   {
+    "type": "image",
+    "label": "Image",
+    "requests": 7,
+    "bytes": 91673
+   },
+   {
+    "type": "document",
+    "label": "Document",
+    "requests": 4,
+    "bytes": 67564
+   }
+  ],
+  "mainThread": [
+   {
+    "group": "scriptEvaluation",
+    "label": "Script Evaluation",
+    "ms": 2042.509199999974
+   },
+   {
+    "group": "scriptParseCompile",
+    "label": "Script Parsing & Compilation",
+    "ms": 834.2231999999999
+   },
+   {
+    "group": "styleLayout",
+    "label": "Style & Layout",
+    "ms": 474.96600000000007
+   },
+   {
+    "group": "other",
+    "label": "Other",
+    "ms": 417.572399999996
+   },
+   {
+    "group": "parseHTML",
+    "label": "Parse HTML & CSS",
+    "ms": 84.97320000000002
+   },
+   {
+    "group": "garbageCollection",
+    "label": "Garbage Collection",
+    "ms": 72.74760000000005
+   },
+   {
+    "group": "paintCompositeRender",
+    "label": "Rendering",
+    "ms": 51.09600000000013
+   }
+  ],
+  "thirdParties": [
+   {
+    "entity": "Google CDN",
+    "bytes": 2023537,
+    "mainThreadMs": 1024.2490012645721
+   },
+   {
+    "entity": "Google Tag Manager",
+    "bytes": 597720,
+    "mainThreadMs": 699.4120001792908
+   },
+   {
+    "entity": "Other Google APIs/SDKs",
+    "bytes": 35016,
+    "mainThreadMs": 70.27400010824203
+   },
+   {
+    "entity": "appspot.com",
+    "bytes": 11719,
+    "mainThreadMs": 8.37199991941452
+   },
+   {
+    "entity": "Unpkg",
+    "bytes": 6310,
+    "mainThreadMs": 5.100000023841858
+   },
+   {
+    "entity": "Google Fonts",
+    "bytes": 562666,
+    "mainThreadMs": 0
+   },
+   {
+    "entity": "Google Analytics",
+    "bytes": 1582,
+    "mainThreadMs": 0
+   }
+  ]
+ },
+ "opportunities": [
+  {
+   "id": "render-blocking-insight",
+   "title": "Render-blocking requests",
+   "displayValue": "Est savings of 2,340 ms",
+   "score": 0,
+   "savingsMs": 2350,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 2350,
+    "FCP": 2350
+   }
+  },
+  {
+   "id": "bootup-time",
+   "title": "Reduce JavaScript execution time",
+   "displayValue": "2.7 s",
+   "score": 0,
+   "savingsMs": 1050,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "TBT": 1050
+   }
+  },
+  {
+   "id": "mainthread-work-breakdown",
+   "title": "Minimize main-thread work",
+   "displayValue": "4.0 s",
+   "score": 0,
+   "savingsMs": 1050,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "TBT": 1050
+   }
+  },
+  {
+   "id": "unused-css-rules",
+   "title": "Reduce unused CSS",
+   "displayValue": "Est savings of 271 KiB",
+   "score": 0,
+   "savingsMs": 450,
+   "savingsBytes": 277089,
+   "metricSavings": {
+    "LCP": 450,
+    "FCP": 450
+   }
+  },
+  {
+   "id": "unused-javascript",
+   "title": "Reduce unused JavaScript",
+   "displayValue": "Est savings of 1,065 KiB",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 1090905,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 0
+   }
+  },
+  {
+   "id": "cls-culprits-insight",
+   "title": "Layout shift culprits",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "CLS": 0
+   }
+  },
+  {
+   "id": "forced-reflow-insight",
+   "title": "Forced reflow",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {}
+  },
+  {
+   "id": "network-dependency-tree-insight",
+   "title": "Network dependency tree",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 0
+   }
+  },
+  {
+   "id": "cache-insight",
+   "title": "Use efficient cache lifetimes",
+   "displayValue": "Est savings of 0 KiB",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 0
+   }
+  },
+  {
+   "id": "font-display-insight",
+   "title": "Font display",
+   "displayValue": "Est savings of 10 ms",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "FCP": 0,
+    "INP": 0
+   }
+  }
+ ],
+ "screenshot": null
+}

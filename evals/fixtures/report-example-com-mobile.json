@@ -1,0 +1,177 @@
+{
+ "schemaVersion": 2,
+ "url": "https://example.com/",
+ "finalUrl": "https://example.com/",
+ "strategy": "mobile",
+ "fetchedAt": "2026-10-06T04:11:57.329Z",
+ "lighthouseVersion": "13.5.0",
+ "analysisMs": 7491.299999999999,
+ "categories": {
+  "performance": 100,
+  "accessibility": 96,
+  "bestPractices": 100,
+  "seo": 80
+ },
+ "lab": {
+  "fcp": {
+   "value": 756,
+   "displayValue": "0.8 s",
+   "score": 1
+  },
+  "lcp": {
+   "value": 778,
+   "displayValue": "0.8 s",
+   "score": 1
+  },
+  "tbt": {
+   "value": 0,
+   "displayValue": "0 ms",
+   "score": 1
+  },
+  "cls": {
+   "value": 0,
+   "displayValue": "0",
+   "score": 1
+  },
+  "speedIndex": {
+   "value": 756,
+   "displayValue": "0.8 s",
+   "score": 1
+  },
+  "ttfb": {
+   "value": 1,
+   "displayValue": "Root document took 0 ms",
+   "score": 1
+  }
+ },
+ "field": {
+  "scope": "url",
+  "lcp": {
+   "p75": 980,
+   "rating": "good"
+  },
+  "inp": {
+   "p75": 86,
+   "rating": "good"
+  },
+  "cls": {
+   "p75": 0,
+   "rating": "good"
+  },
+  "fcp": {
+   "p75": 982,
+   "rating": "good"
+  },
+  "ttfb": {
+   "p75": 680,
+   "rating": "good"
+  }
+ },
+ "fieldHistory": null,
+ "security": {
+  "grade": "F",
+  "score": 10,
+  "testsPassed": 7,
+  "testsFailed": 5,
+  "detailsUrl": "https://developer.mozilla.org/en-US/observatory/analyze?host=example.com"
+ },
+ "sources": {
+  "pagespeed": {
+   "status": "ok",
+   "message": null,
+   "ms": 9722
+  },
+  "cruxHistory": {
+   "status": "unavailable",
+   "message": "Chrome UX Report API isn't enabled for this API key. Enable it in Google Cloud to see trends.",
+   "ms": 480
+  },
+  "observatory": {
+   "status": "ok",
+   "message": null,
+   "ms": 1112
+  }
+ },
+ "diagnostics": {
+  "domSize": 16,
+  "requestCount": 2,
+  "totalBytes": 2324,
+  "thirdPartyRequests": 0,
+  "thirdPartyBytes": 0,
+  "mainThreadMs": 70.9368,
+  "jsBootupMs": 0,
+  "resources": [
+   {
+    "type": "script",
+    "label": "Script",
+    "requests": 1,
+    "bytes": 1700
+   },
+   {
+    "type": "document",
+    "label": "Document",
+    "requests": 1,
+    "bytes": 624
+   }
+  ],
+  "mainThread": [
+   {
+    "group": "other",
+    "label": "Other",
+    "ms": 29.6748
+   },
+   {
+    "group": "styleLayout",
+    "label": "Style & Layout",
+    "ms": 29.1036
+   },
+   {
+    "group": "scriptEvaluation",
+    "label": "Script Evaluation",
+    "ms": 7.337999999999999
+   },
+   {
+    "group": "paintCompositeRender",
+    "label": "Rendering",
+    "ms": 2.4695999999999994
+   },
+   {
+    "group": "parseHTML",
+    "label": "Parse HTML & CSS",
+    "ms": 1.7184
+   },
+   {
+    "group": "scriptParseCompile",
+    "label": "Script Parsing & Compilation",
+    "ms": 0.6324
+   }
+  ],
+  "thirdParties": []
+ },
+ "opportunities": [
+  {
+   "id": "network-dependency-tree-insight",
+   "title": "Network dependency tree",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 0
+   }
+  },
+  {
+   "id": "cache-insight",
+   "title": "Use efficient cache lifetimes",
+   "displayValue": "Est savings of 2 KiB",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 0
+   }
+  }
+ ],
+ "screenshot": null
+}

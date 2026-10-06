@@ -1,4 +1,5 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import AiInsights from "@/components/AiInsights/page";
 import StatsCards from "@/components/StatsCards/page";
 import BottomStats from "@/components/BottomStats/page";
 import FieldTrend from "@/components/FieldTrend/page";
@@ -38,7 +39,8 @@ describe("dashboard renders real report data", () => {
     expect(inpRow).toHaveTextContent("Needs improvement");
 
     expect(screen.getByText("DOM elements").parentElement).toHaveTextContent("838");
-    expect(screen.getByRole("button", { name: /submit/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Why is my LCP slow?" })).toBeEnabled();
   });
 
   test("FieldTrend shows the latest p75 per Core Web Vital with its rating", () => {
@@ -70,5 +72,50 @@ describe("dashboard renders real report data", () => {
     expect(screen.getByText("A+")).toBeInTheDocument();
     expect(screen.getByText("11 of 12 checks passed")).toBeInTheDocument();
     expect(screen.getByText("CrUX history").parentElement).toHaveTextContent("unavailable");
+  });
+
+  describe("AiInsights", () => {
+    const respond = (status: number, body: unknown) =>
+      (global.fetch = jest.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body }) as jest.Mock);
+    afterEach(() => {
+      // jsdom has no fetch of its own; drop the stub so tests stay independent.
+      delete (global as { fetch?: unknown }).fetch;
+    });
+
+    test("generates on request and shows findings with readable evidence", async () => {
+      respond(200, {
+        summary: "Render-blocking CSS is the biggest win.",
+        findings: [
+          {
+            severity: "critical",
+            title: "Defer render-blocking CSS",
+            explanation: "It delays first paint.",
+            fix: "Inline critical CSS.",
+            estimatedImpact: "~2.3 s faster LCP",
+            evidence: ["opportunity:render-blocking-insight", "lab:tbt"],
+          },
+        ],
+        meta: { model: "claude-opus-5-5", droppedFindings: 1, latencyMs: 4200, inputTokens: 1, outputTokens: 1, cacheReadTokens: 0 },
+      });
+      render(<AiInsights report={report} />);
+      fireEvent.click(screen.getByRole("button", { name: "Generate insights" }));
+
+      expect(await screen.findByText("Render-blocking CSS is the biggest win.")).toBeInTheDocument();
+      expect(screen.getByText("critical")).toBeInTheDocument();
+      const evidence = within(screen.getByRole("list", { name: "Evidence" }));
+      expect(evidence.getByText(/^Render-blocking requests · est\. 2\.3 s savings/)).toBeInTheDocument();
+      expect(evidence.getByText(/963 ms/)).toBeInTheDocument();
+      expect(screen.getByText("1 unsupported finding(s) removed")).toBeInTheDocument();
+      expect(JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body).report.url).toBe(report.url);
+    });
+
+    test("shows the server's message when AI isn't available", async () => {
+      respond(503, { error: "AI features aren't configured on this deployment yet." });
+      render(<AiInsights report={report} />);
+      fireEvent.click(screen.getByRole("button", { name: "Generate insights" }));
+
+      expect(await screen.findByText(/aren't configured/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    });
   });
 });

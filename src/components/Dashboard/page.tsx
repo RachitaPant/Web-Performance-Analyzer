@@ -8,6 +8,7 @@ import Charts from "../Charts/page";
 import BottomStats from "../BottomStats/page";
 import Form from "../Form/page";
 import DataSources from "../DataSources/page";
+import AiInsights from "../AiInsights/page";
 import type { Report } from "@/lib/report";
 
 export default function Dashboard() {
@@ -24,6 +25,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <DataSources sources={report.sources} />
               <StatsCards report={report} />
+              <AiInsights report={report} />
               <Charts report={report} />
               <BottomStats report={report} />
             </div>

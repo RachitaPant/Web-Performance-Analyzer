@@ -9,9 +9,11 @@
     "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:firebase": "node test-firebase.cjs"
+    "test:firebase": "node test-firebase.cjs",
+    "eval": "tsx --env-file=.env.local evals/run.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.0",
     "@upstash/ratelimit": "^2.2.0",
@@ -42,6 +44,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
