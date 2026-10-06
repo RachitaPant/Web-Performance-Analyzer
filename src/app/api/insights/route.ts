@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { InsightsResponseSchema } from "@/lib/insights";
 import { ReportSchema } from "@/lib/report";
-import { AI_MODEL, AiError } from "@/server/ai/client";
+import { resolveLlmConfig } from "@/server/ai/config";
+import { AiError } from "@/server/ai/llm";
 import { generateInsights } from "@/server/ai/insights";
 import { cacheGet, cacheSet, hashKey } from "@/server/kvCache";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
@@ -22,8 +23,13 @@ export async function POST(req: Request) {
   }
   const { report } = parsed.data;
 
-  // The same report (url + device + run time) always gets the same insights: serve them free.
-  const cacheKey = `sitepulse:insights:${INSIGHTS_VERSION}:${hashKey(AI_MODEL, report.url, report.strategy, report.fetchedAt)}`;
+  const llm = resolveLlmConfig();
+  if (!llm) {
+    return NextResponse.json({ error: "AI features aren't configured on this deployment yet." }, { status: 503 });
+  }
+
+  // The same report (url + device + run time) on the same model always gets the same insights.
+  const cacheKey = `sitepulse:insights:${INSIGHTS_VERSION}:${hashKey(llm.provider, llm.models[0], report.url, report.strategy, report.fetchedAt)}`;
   const cached = await cacheGet(cacheKey, InsightsResponseSchema);
   if (cached) return NextResponse.json(cached, { headers: { "X-Cache": "HIT" } });
 

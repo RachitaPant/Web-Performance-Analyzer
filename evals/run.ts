@@ -1,9 +1,10 @@
-// Runs the AI insights eval against real Claude calls. Costs money: see evals/README.md.
+// Runs the AI insights eval against real model calls via the configured provider (see evals/README.md).
 //   npm run eval                 # all cases
 //   npm run eval -- fast-site    # one case by id
 import { mkdirSync, writeFileSync } from "node:fs";
 import { buildEvidence } from "@/lib/evidence";
 import { generateInsights } from "@/server/ai/insights";
+import { resolveLlmConfig } from "@/server/ai/config";
 import type { InsightsResponse } from "@/lib/insights";
 import { baseChecks, groundingRate, type CheckResult } from "./checks";
 import { CASES } from "./cases";
@@ -13,14 +14,21 @@ type CaseResult = { id: string; description: string } & (
   | { error: string }
 );
 
-// Claude Opus 5.5 list prices, USD per million tokens.
-const PRICE = { input: 4, output: 20, cacheRead: 0.2 };
+// Optional USD-per-million-token prices for cost reporting; free tiers leave these unset (= $0).
+const PRICE = {
+  input: Number(process.env.AI_PRICE_INPUT_PER_M ?? 0),
+  output: Number(process.env.AI_PRICE_OUTPUT_PER_M ?? 0),
+};
 
 const main = async () => {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("ANTHROPIC_API_KEY is not set (add it to .env.local).");
+  const llm = resolveLlmConfig();
+  if (!llm) {
+    console.error("AI isn't configured: set AI_PROVIDER / AI_API_KEY (and AI_MODEL if required) in .env.local.");
     process.exit(2);
   }
+  const fallbacks = llm.models.length > 1 ? ` (fallbacks: ${llm.models.slice(1).join(", ")})` : "";
+  console.log(`Provider: ${llm.provider} · model: ${llm.models[0]}${fallbacks}\n`);
+  let tokens = 0;
 
   const only = process.argv.slice(2);
   const cases = only.length ? CASES.filter((c) => only.includes(c.id)) : CASES;
@@ -32,14 +40,13 @@ const main = async () => {
     try {
       const r = await generateInsights(c.report);
       const checks: CheckResult[] = [...baseChecks(r, buildEvidence(c.report)), ...c.checks(r, c.report)];
-      const caseCost =
-        ((r.meta.inputTokens - r.meta.cacheReadTokens) * PRICE.input +
-          r.meta.cacheReadTokens * PRICE.cacheRead +
-          r.meta.outputTokens * PRICE.output) /
-        1e6;
+      const caseCost = (r.meta.inputTokens * PRICE.input + r.meta.outputTokens * PRICE.output) / 1e6;
       cost += caseCost;
+      tokens += r.meta.inputTokens + r.meta.outputTokens;
       const passed = checks.filter((x) => x.pass).length;
-      console.log(`${passed}/${checks.length} checks · ${(r.meta.latencyMs / 1000).toFixed(1)} s · $${caseCost.toFixed(3)}`);
+      console.log(
+        `${passed}/${checks.length} checks · ${(r.meta.latencyMs / 1000).toFixed(1)} s · ${r.meta.inputTokens + r.meta.outputTokens} tokens · ${r.meta.model}`
+      );
       checks.filter((x) => !x.pass).forEach((x) => console.log(`    ✗ ${x.name}: ${x.detail}`));
       results.push({ id: c.id, description: c.description, checks, groundingRate: groundingRate(r), insights: r });
     } catch (error) {
@@ -54,6 +61,9 @@ const main = async () => {
   const grounding = results.flatMap((r) => ("groundingRate" in r ? [r.groundingRate] : []));
   const summary = {
     ranAt: new Date().toISOString(),
+    provider: llm.provider,
+    model: llm.models[0],
+    tokens,
     cases: results.length,
     errored,
     checksPassed: passed,
@@ -68,7 +78,7 @@ const main = async () => {
 
   console.log(`\n${passed}/${allChecks.length} checks passed across ${results.length} cases` + (errored ? ` (${errored} errored)` : ""));
   console.log(`Mean grounding rate: ${summary.meanGroundingRate == null ? "n/a" : `${Math.round(summary.meanGroundingRate * 100)}%`}`);
-  console.log(`Total cost: $${summary.costUsd.toFixed(3)}  ·  details: ${file}`);
+  console.log(`Tokens: ${tokens}  ·  cost: $${summary.costUsd.toFixed(3)}  ·  details: ${file}`);
   process.exit(passed === allChecks.length && errored === 0 ? 0 : 1);
 };
 

@@ -13,7 +13,6 @@
     "eval": "tsx --env-file=.env.local evals/run.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.0",
     "@upstash/ratelimit": "^2.2.0",

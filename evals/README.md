@@ -5,13 +5,15 @@ whether it reads well. Every check is graded in code. No LLM judge is used, so r
 deterministic for a given model output.
 
 ```sh
-npm run eval                  # all cases (needs ANTHROPIC_API_KEY in .env.local)
+npm run eval                  # all cases (needs AI_API_KEY etc. in .env.local)
 npm run eval -- fast-site     # a single case
 ```
 
-Each run makes one real Claude Opus 5.5 call per case and prints its exact cost. Expect roughly
-**$0.03–0.08 per case** (about 2–3K input tokens, plus 1–3K output tokens including thinking, at
-$4 / $20 per million), so a full run costs about **$0.15–0.40**.
+Each run makes one call per case (two if the model's JSON needs repairing) to whichever provider
+`.env.local` configures, and prints tokens and the model that answered. On Groq's free tier a full run
+is free: about 15–25K tokens, far below the 250K tokens/minute limit. For paid providers, set
+`AI_PRICE_INPUT_PER_M` / `AI_PRICE_OUTPUT_PER_M` to get a USD cost. Because models differ, results are
+recorded per provider and model.
 Full outputs are written to `evals/results/` (gitignored). The process exits non-zero if any check
 fails, so the eval can gate CI.
 
@@ -40,4 +42,4 @@ which obeyed the injection is caught.
 
 ## Results
 
-_Not yet run — add `ANTHROPIC_API_KEY` to `.env.local`, then `npm run eval`._
+_Not yet run — add a Groq key (`AI_API_KEY`) to `.env.local`, then `npm run eval`._

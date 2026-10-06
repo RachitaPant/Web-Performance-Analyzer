@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ChatTurnSchema } from "@/lib/insights";
 import { ReportSchema } from "@/lib/report";
-import { AiError } from "@/server/ai/client";
+import { AiError } from "@/server/ai/llm";
 import { streamChatAnswer } from "@/server/ai/chat";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const stream = streamChatAnswer(parsed.data.report, parsed.data.messages);
+    const stream = await streamChatAnswer(parsed.data.report, parsed.data.messages);
     return new Response(stream, {
       headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
     });

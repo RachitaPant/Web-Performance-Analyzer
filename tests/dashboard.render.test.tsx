@@ -95,7 +95,7 @@ describe("dashboard renders real report data", () => {
             evidence: ["opportunity:render-blocking-insight", "lab:tbt"],
           },
         ],
-        meta: { model: "claude-opus-5-5", droppedFindings: 1, latencyMs: 4200, inputTokens: 1, outputTokens: 1, cacheReadTokens: 0 },
+        meta: { model: "openai/gpt-oss-120b", droppedFindings: 1, latencyMs: 4200, inputTokens: 1, outputTokens: 1, cacheReadTokens: 0 },
       });
       render(<AiInsights report={report} />);
       fireEvent.click(screen.getByRole("button", { name: "Generate insights" }));

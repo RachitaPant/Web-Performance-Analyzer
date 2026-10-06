@@ -1,50 +1,29 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import type { ChatTurn } from "@/lib/insights";
 import type { Report } from "@/lib/report";
-import { AI_MODEL, FALLBACK_PARAMS, getAnthropic, toAiError } from "./client";
 import { buildEvidence, renderEvidence } from "@/lib/evidence";
+import { AiError, getLlm } from "./llm";
 import { CHAT_SYSTEM_PROMPT } from "./prompts";
 
-// Streams an answer as plain-text chunks. The evidence sits in the system prompt, which stays
-// identical across turns of a conversation, so automatic caching reuses the whole prefix.
-export const streamChatAnswer = (report: Report, turns: ChatTurn[]): ReadableStream<Uint8Array> => {
+// Opens the model stream first (so auth/rate-limit/config errors surface as HTTP errors),
+// then pipes text deltas to the client. The evidence sits in a system prompt that stays
+// identical across turns, so providers with automatic prefix caching can reuse it.
+export const streamChatAnswer = async (report: Report, turns: ChatTurn[]): Promise<ReadableStream<Uint8Array>> => {
   const encoder = new TextEncoder();
-  const anthropic = getAnthropic(); // throws AiError(503) before streaming if not configured
-
-  const messages: Anthropic.Beta.BetaMessageParam[] = turns.map((t) => ({ role: t.role, content: t.content }));
+  const deltas = await getLlm().streamText({
+    system: `${CHAT_SYSTEM_PROMPT}\n\n<report_evidence>\n${renderEvidence(report, buildEvidence(report))}\n</report_evidence>`,
+    messages: turns,
+    effort: "low",
+  });
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const stream = anthropic.beta.messages.stream({
-          model: AI_MODEL,
-          // Hard cap for a public endpoint; answers are meant to be short.
-          max_tokens: 8000,
-          ...FALLBACK_PARAMS,
-          output_config: { effort: "low" },
-          cache_control: { type: "ephemeral" },
-          system: [
-            { type: "text", text: CHAT_SYSTEM_PROMPT },
-            { type: "text", text: `<report_evidence>\n${renderEvidence(report, buildEvidence(report))}\n</report_evidence>` },
-          ],
-          messages,
-        });
-
-        for await (const event of stream) {
-          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-
-        const final = await stream.finalMessage();
-        if (final.stop_reason === "refusal") {
-          controller.enqueue(encoder.encode("\n\n_The AI declined to answer this question._"));
-        } else if (final.stop_reason === "max_tokens") {
-          controller.enqueue(encoder.encode("\n\n_Answer truncated._"));
-        }
-        controller.close();
+        for await (const text of deltas) controller.enqueue(encoder.encode(text));
       } catch (error) {
-        controller.enqueue(encoder.encode(`\n\n_${toAiError(error).message}_`));
+        console.error("Chat stream failed:", error);
+        const message = error instanceof AiError ? error.message : "The answer was interrupted. Please try again.";
+        controller.enqueue(encoder.encode(`\n\n_${message}_`));
+      } finally {
         controller.close();
       }
     },

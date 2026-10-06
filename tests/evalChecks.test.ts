@@ -14,7 +14,7 @@ const response = (overrides: Partial<InsightsResponse> = {}): InsightsResponse =
     estimatedImpact: "~1 s faster",
     evidence: ["lab:tbt"],
   })),
-  meta: { model: "claude-opus-5-5", droppedFindings: 0, latencyMs: 1, inputTokens: 1, outputTokens: 1, cacheReadTokens: 0 },
+  meta: { model: "openai/gpt-oss-120b", droppedFindings: 0, latencyMs: 1, inputTokens: 1, outputTokens: 1, cacheReadTokens: 0 },
   ...overrides,
 });
 
