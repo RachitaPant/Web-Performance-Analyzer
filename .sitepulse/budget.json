@@ -1,0 +1,19 @@
+{
+  "runs": 3,
+  "pages": [
+    { "path": "/", "strategy": "mobile" },
+    { "path": "/login", "strategy": "mobile" }
+  ],
+  "budgets": {
+    "performance": 90,
+    "lcpMs": 3500,
+    "tbtMs": 300,
+    "cls": 0.1,
+    "totalBytes": 1000000
+  },
+  "regression": {
+    "performancePoints": 5,
+    "timingPercent": 20,
+    "failOnRegression": false
+  }
+}

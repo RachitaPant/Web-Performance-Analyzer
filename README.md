@@ -108,6 +108,25 @@ limit are shared across serverless instances (see `.env.example`).
   vercel.com take PSI 100 s+, and over 150 s when called from Vercel, so the server path times out
   on them; in the browser they complete. Redeploy after setting it (it's inlined at build time).
 
+## Performance budgets in CI
+Every successful Vercel deployment triggers [`.github/workflows/sitepulse.yml`](.github/workflows/sitepulse.yml),
+which runs [`scripts/sitepulse-ci.ts`](scripts/sitepulse-ci.ts) on the GitHub runner (no serverless time limit):
+
+- audits the pages in [`.sitepulse/budget.json`](.sitepulse/budget.json) and checks the budgets
+  (minimum performance score; maximum LCP, TBT, CLS, FCP, page weight), using the median of 3
+  independent Lighthouse runs per page, since single runs vary widely (one page measured 99 and 69);
+- for PR previews, compares against production and lists new or worse Lighthouse opportunities;
+- when something broke or regressed, adds an AI explanation whose causes must cite real evidence ids;
+- posts one sticky PR comment (updated on each push), writes a job summary and a JSON artifact,
+  and fails the check when a budget is exceeded. Regressions only warn by default, since lab scores vary.
+
+Setup (repository → Settings → Secrets and variables → Actions): secret `GOOGLE_PAGESPEED_API_KEY`,
+optional secret `AI_API_KEY`, variable `SITEPULSE_PRODUCTION_URL`, and, if previews use Vercel
+Deployment Protection, secret `VERCEL_AUTOMATION_BYPASS_SECRET`. The bypass secret is stripped from
+every report, comment and artifact.
+
+Run it locally: `npx tsx --env-file=.env.local scripts/sitepulse-ci.ts --url <deployment> --baseline-url <production>`.
+
 ## Scripts
 | Command | What it does |
 | --- | --- |
@@ -116,6 +135,7 @@ limit are shared across serverless instances (see `.env.example`).
 | `npm test` | Unit and render tests (Jest, using a real PSI response fixture) |
 | `npm run lint` | ESLint (flat config, `eslint-config-next`) |
 | `npm run test:firebase` | Check the Firebase config in `.env.local` |
+| `npm run perf:ci -- --url <url>` | Audit a deployment against `.sitepulse/budget.json` (what CI runs) |
 | `npm run eval` | Grade the AI insights against real reports (calls the configured LLM) |
 
 ## API

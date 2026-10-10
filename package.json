@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:firebase": "node test-firebase.cjs",
-    "eval": "tsx --env-file=.env.local evals/run.ts"
+    "eval": "tsx --env-file=.env.local evals/run.ts",
+    "perf:ci": "tsx scripts/sitepulse-ci.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
