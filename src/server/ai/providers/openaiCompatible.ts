@@ -89,7 +89,10 @@ export const createOpenAiCompatibleClient = (config: LlmConfig): LlmClient => {
           });
         } catch (error) {
           const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+          console.error(`LLM request to ${model} failed:`, error instanceof Error ? (error.cause ?? error.message) : error);
           lastError = new AiError(timedOut ? 504 : 502, timedOut ? "The AI took too long to respond. Please try again." : "Couldn't reach the AI service.");
+          // A dropped connection is usually transient: retry the same model once; a timeout moves on.
+          if (!timedOut && attempt === 0) continue;
           break; // next model
         }
 

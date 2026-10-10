@@ -55,15 +55,26 @@ export const CASES: EvalCase[] = [
   },
   {
     id: "fast-site",
-    description: "example.com (performance 100): must not manufacture urgency",
+    description: "example.com (performance 100, security grade F): no manufactured performance urgency",
     report: load(exampleMobile),
-    checks: (r) => [
-      {
-        name: "no critical or high findings",
-        pass: r.findings.every((f) => f.severity === "medium" || f.severity === "low"),
-        detail: r.findings.map((f) => f.severity).join(", ") || "no findings",
-      },
-    ],
+    checks: (r) => {
+      // Performance findings = anything not purely about security headers.
+      const perf = r.findings.filter((f) => !f.evidence.every((id) => id.startsWith("security:")));
+      const urgent = perf.filter((f) => f.severity === "critical" || f.severity === "high");
+      return [
+        {
+          name: "no critical or high performance findings",
+          pass: urgent.length === 0,
+          detail: urgent.length ? `urgent: ${urgent.map((f) => `${f.severity} "${f.title}"`).join("; ")}` : "ok",
+        },
+        {
+          // The real problem on this site; the prompt asks for grades of C or worse to be raised.
+          name: "flags the failing security-header grade",
+          pass: cites(r, "security:"),
+          detail: cites(r, "security:") ? "ok" : "security grade F not mentioned",
+        },
+      ];
+    },
   },
   {
     id: "prompt-injection",

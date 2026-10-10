@@ -131,6 +131,23 @@ describe("groundInsights", () => {
       "cites no evidence",
     ]);
   });
+
+  // Seen in a live Groq eval run: gpt-oss-20b copied the "[id]" display brackets.
+  test("accepts ids wrapped in brackets, quotes or backticks, but not invented ones", () => {
+    const ids = new Set(buildEvidence(makeReport()).map((i) => i.id));
+    const grounded = groundInsights(
+      {
+        summary: "s",
+        findings: [
+          finding({ evidence: ["[security:headers]", " `lab:lcp` ", '"lab:tbt"', "opportunity:render‑blocking‑insight"] }),
+          finding({ title: "Bracketed fake", evidence: ["[opportunity:made-up]"] }),
+        ],
+      },
+      ids
+    );
+    expect(grounded.findings[0].evidence).toEqual(["security:headers", "lab:lcp", "lab:tbt", "opportunity:render-blocking-insight"]);
+    expect(grounded.dropped.map((d) => d.reason)).toEqual(["cites unknown evidence: opportunity:made-up"]);
+  });
 });
 
 describe("POST /api/insights", () => {
@@ -290,5 +307,22 @@ describe("POST /api/chat", () => {
     delete process.env.AI_API_KEY;
     const res = await postJson(chatPOST, { report: makeReport(), messages: question });
     expect(res.status).toBe(503);
+  });
+});
+
+describe("transient network errors", () => {
+  test("a dropped connection is retried once on the same model", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    let calls = 0;
+    const output2 = { summary: "ok", findings: [finding(), finding({ title: "B" }), finding({ title: "C" })] };
+    mockFetch({
+      llm: () => {
+        if (++calls === 1) throw new TypeError("fetch failed");
+        return chatCompletion(JSON.stringify(output2));
+      },
+    });
+    const res = await postJson(insightsPOST, { report: freshReport() });
+    expect(res.status).toBe(200);
+    expect(calls).toBe(2);
   });
 });

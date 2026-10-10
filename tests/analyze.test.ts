@@ -3,6 +3,7 @@ import { ReportSchema } from "@/lib/report";
 import { analyze } from "@/server/analyze";
 import { transformCruxHistory } from "@/server/cruxHistory";
 import { AnalysisError } from "@/server/pagespeed";
+import liveCrux from "./fixtures/crux-history-live-webdev.json";
 import { cruxRecord, json, mockFetch } from "./helpers";
 
 const URL = "https://web.dev/";
@@ -20,6 +21,13 @@ describe("transformCruxHistory", () => {
       { end: "2026-09-19", lcp: null, inp: 225, cls: null },
       { end: "2026-09-26", lcp: 3133, inp: 218, cls: 0.01 },
     ]);
+  });
+
+  test("handles a real CrUX History API response (web.dev, phone, captured 2026-10-10)", () => {
+    const weeks = transformCruxHistory(liveCrux.record);
+    expect(weeks).toHaveLength(25);
+    expect(weeks.at(-1)).toEqual({ end: "2026-10-03", lcp: 3139, inp: 218, cls: 0.01 });
+    expect(weeks.every((w) => typeof w.cls === "number" && typeof w.lcp === "number")).toBe(true);
   });
 });
 

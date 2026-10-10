@@ -41,8 +41,9 @@ Video: [LinkedIn demo](https://www.linkedin.com/posts/rachita-pant_webperformanc
 - **Prompt-injection defense.** Report data is fenced in `<report_evidence>` in the user turn and
   treated as untrusted. The system prompt never contains report text.
 - **Measured with evals.** `npm run eval` grades the output on real reports for grounding,
-  invented numbers, prioritization, fast-site restraint and injection resistance
-  ([`evals/README.md`](evals/README.md)).
+  invented numbers, prioritization, fast-site restraint and injection resistance. On Groq
+  `openai/gpt-oss-120b`: **24/24 checks and 100% grounding over two consecutive runs**, at $0
+  ([`evals/README.md`](evals/README.md), including the bugs the eval caught).
 - **Resilience and cost controls.** Insights are generated on demand and cached per report for 24 h,
   AI calls have their own rate limit, chat is capped at 20 turns, and a rate-limited or failing model
   falls back to the next one in `AI_FALLBACK_MODELS`.

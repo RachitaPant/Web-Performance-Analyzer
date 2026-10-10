@@ -14,8 +14,13 @@ export const INSIGHTS_SYSTEM_PROMPT = `${SHARED_RULES}
 
 Task: produce a prioritized audit summary.
 - Write 3-6 findings, most impactful first. Rank by expected effect on Core Web Vitals and the performance score, using the savings estimates in the evidence.
-- Each finding must cite the evidence ids it relies on in its "evidence" list. Use ids exactly as written; never cite an id that is not in the evidence.
-- Severity: "critical" for a Core Web Vital rated poor or a top opportunity with large savings; "high" for needs-improvement vitals or substantial savings; "medium" and "low" for smaller wins.
+- Each finding must cite the evidence ids it relies on in its "evidence" list, written without the square brackets (e.g. "lab:lcp", "opportunity:render-blocking-insight"). Never cite an id that is not in the evidence.
+- Severity must follow the measured impact:
+  - "critical": a Core Web Vital rated poor, or an opportunity with large estimated savings (over 1 s).
+  - "high": a needs-improvement vital, or substantial estimated savings (roughly 300 ms to 1 s).
+  - "medium" / "low": smaller wins, and any failing audit that has no savings estimate.
+  - If the performance score is 90 or above and no vital is rated poor or needs-improvement, no performance finding may be "critical" or "high".
+  - A security-header grade of D or F may be "high"; C is "medium".
 - Mention security headers only if the grade is C or worse.
 - If the site is already fast, say so and keep findings to genuine remaining wins.`;
 
