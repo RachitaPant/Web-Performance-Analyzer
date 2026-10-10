@@ -1,14 +1,20 @@
-import { auth } from "./firebaseClient";
+import { auth, FIREBASE_UNAVAILABLE_MESSAGE } from "./firebaseClient";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
 
+// Throws inside each helper's try block, so callers get it back as `{ error }`.
+const requireAuth = () => {
+  if (!auth) throw new Error(FIREBASE_UNAVAILABLE_MESSAGE);
+  return auth;
+};
+
 export const signUpUser = async (email: string, password: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
-      auth,
+      requireAuth(),
       email,
       password
     );
@@ -21,7 +27,7 @@ export const signUpUser = async (email: string, password: string) => {
 export const signInUser = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
-      auth,
+      requireAuth(),
       email,
       password
     );
@@ -33,7 +39,7 @@ export const signInUser = async (email: string, password: string) => {
 
 export const signOutUser = async () => {
   try {
-    await signOut(auth);
+    await signOut(requireAuth());
     return { error: null };
   } catch (error) {
     return { error };
@@ -41,5 +47,5 @@ export const signOutUser = async () => {
 };
 
 export const getCurrentUser = async () => {
-  return auth.currentUser;
+  return auth?.currentUser ?? null;
 };

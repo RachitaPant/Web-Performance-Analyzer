@@ -1,63 +1,30 @@
 import RUMInsights from "../RumInsights/page";
 import AskAi from "../AskAi/page";
-interface PuppeteerData {
-  jsExecutionTime?: number | null;
-  cpuUsage?: number | null;
-  memoryUsage?: number | null;
-  diskIO?: number | null;
-  networkRequests?: string[];
-  performanceMetrics?: Record<string, unknown>; 
-  totalDomNodes?: number;
-  thirdPartyRequestsCount?: number;
-  resourceBreakdown?: Record<string, number>;
-  domContentLoadedTime?:number|0;
-  largeImages?: {
-    src: string;
-    width: number;
-    height: number;
-  }[];
-  longTasks?: {
-    name: string;
-    startTime: number;
-    duration: number;
-  }[];
-  unusedJSBytes?: {
-    name: string;
-    transferSize: number;
-    encodedBodySize: number;
-  }[];
-}
-
-interface LighthouseAudit {
-  score?: number|null;
-}
-
-interface LighthouseData {
-  audits?: {
-    "is-on-https"?: LighthouseAudit;
-    "first-contentful-paint"?: LighthouseAudit;
-    "largest-contentful-paint"?: LighthouseAudit;
-  };
-}
+import Opportunities from "../Opportunities/page";
+import Diagnostics from "../Diagnostics/page";
+import FieldTrend from "../FieldTrend/page";
+import Security from "../Security/page";
+import type { Report } from "@/lib/report";
 
 interface BottomStatsProps {
-  data?: {
-    puppeteerData?: PuppeteerData;
-    lighthouseData?: LighthouseData;
-  };
+  report: Report;
 }
 
-const BottomStats: React.FC<BottomStatsProps> = ({ data }) =>{
-    return (    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      
-      
-      <RUMInsights
-  DOMContentLoadTime={data?.puppeteerData?.domContentLoadedTime ?? 0}  
-  totalDOMNodes={data?.puppeteerData?.totalDomNodes ?? 0}
-  thirdPartyRequestCount={data?.puppeteerData?.thirdPartyRequestsCount ?? 0}
-/>
+const BottomStats: React.FC<BottomStatsProps> = ({ report }) => (
+  <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <Opportunities opportunities={report.opportunities} />
+      <Diagnostics report={report} />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <FieldTrend history={report.fieldHistory} unavailableReason={report.sources.cruxHistory.message} />
+      <Security security={report.security} unavailableReason={report.sources.observatory.message} />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <RUMInsights field={report.field} />
+      <AskAi report={report} />
+    </div>
+  </div>
+);
 
-    <AskAi></AskAi>
-      </div>)
-}
 export default BottomStats;

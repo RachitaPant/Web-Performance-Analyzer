@@ -1,96 +1,49 @@
-
 import React from "react";
-import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import type { LabMetric, Report } from "@/lib/report";
+import { NO_RATING_STYLE, RATING_STYLES, formatMs, ratingFromScore } from "@/lib/format";
 
 interface StatsProps {
-  data?: {
-    puppeteerData?: {
-      jsExecutionTime?: number | null;
-      cpuUsage?: number | null;
-      memoryUsage?: number | null;
-      diskIO?: number | null;
-    };
-    lighthouseData?: {
-      audits?: {
-        "is-on-https"?: {
-          score?: number | null;
-        };
-        "first-contentful-paint"?: {
-          score?: number | null;
-        };
-        "largest-contentful-paint"?: {
-          score?: number | null;
-        };
-      };
-    };
-  };
+  report: Report;
 }
 
+// Lab metrics from the Lighthouse run. INP needs real users, so it lives in the field-data card.
+const StatsCards: React.FC<StatsProps> = ({ report }) => {
+  const { lab, categories, strategy } = report;
+  const performanceScore = categories.performance;
 
-
-const StatsCard: React.FC<StatsProps> = ({ data }) => {
-  if (!data || Object.keys(data).length === 0) {
-    return (
-        <div className="dash-card animate-fade-up flex items-center justify-center h-40 p-6 mb-2">
-            <p className="text-gray-400 text-center">No stats available. Enter a URL to analyze.</p>
-        </div>
-    );
-}
-  const puppeteerData = data?.puppeteerData || {};
-  const lighthouseData = data?.lighthouseData?.audits || {};
-
- 
-  const previousData = {
-    jsExecutionTime: 500,
-    cpuUsage: 30,
-    memoryUsage: 1200,
-    diskIO: 50,
-    firstContentfulPaint: 1.8,
-    largestContentfulPaint: 2.5,
-    httpsScore: 1,
-  };
+  const cards: { title: string; hint: string; metric: LabMetric; format?: (m: LabMetric) => string }[] = [
+    { title: "Largest Contentful Paint", hint: "When the main content is visible", metric: lab.lcp },
+    { title: "Total Blocking Time", hint: "Lab proxy for responsiveness (INP)", metric: lab.tbt },
+    {
+      title: "Cumulative Layout Shift",
+      hint: "Visual stability",
+      metric: lab.cls,
+      format: (m) => (m.value == null ? "N/A" : m.value.toFixed(3)),
+    },
+    { title: "First Contentful Paint", hint: "When anything first renders", metric: lab.fcp },
+    { title: "Speed Index", hint: "How quickly content fills in", metric: lab.speedIndex },
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      {/* Execution Time */}
       <StatCard
         index={0}
-        title="Execution Time"
-        value={puppeteerData.jsExecutionTime?? undefined}
-        unit="ms"
-        prevValue={previousData.jsExecutionTime}
-        isPositive={true}
+        title={`Performance (${strategy})`}
+        hint="Lighthouse performance score"
+        value={performanceScore == null ? "N/A" : `${performanceScore}`}
+        unit="/100"
+        score={performanceScore == null ? null : performanceScore / 100}
       />
-
-      {/* First Contentful Paint */}
-      <StatCard
-        index={1}
-        title="First Contentful Paint"
-        value={lighthouseData["first-contentful-paint"]?.score?? undefined}
-        unit="s"
-        prevValue={previousData.firstContentfulPaint}
-        isPositive={false}
-      />
-
-      {/* Largest Contentful Paint */}
-      <StatCard
-        index={2}
-        title="Largest Contentful Paint"
-        value={lighthouseData["largest-contentful-paint"]?.score?? undefined}
-        unit="s"
-        prevValue={previousData.largestContentfulPaint}
-        isPositive={false}
-      />
-
-      {/* HTTPS Score */}
-      <StatCard
-        index={3}
-        title="HTTPS Score"
-        value={lighthouseData["is-on-https"]?.score?? undefined}
-        unit=""
-        prevValue={previousData.httpsScore}
-        isPositive={true}
-      />
+      {cards.map((c, i) => (
+        <StatCard
+          key={c.title}
+          index={i + 1}
+          title={c.title}
+          hint={c.hint}
+          value={c.format ? c.format(c.metric) : formatMs(c.metric.value)}
+          score={c.metric.score}
+        />
+      ))}
     </div>
   );
 };
@@ -98,73 +51,32 @@ const StatsCard: React.FC<StatsProps> = ({ data }) => {
 interface StatCardProps {
   index: number;
   title: string;
-  value?: number;
-  unit: string;
-  prevValue: number;
-  isPositive: boolean;
+  hint: string;
+  value: string;
+  unit?: string;
+  score: number | null;
 }
 
-const StatCard: React.FC<StatCardProps> = ({
-  index,
-  title,
-  value,
-  unit,
-  prevValue,
-  isPositive,
-}) => {
-  const percentageChange = prevValue
-    ? (((value ?? prevValue) - prevValue) / prevValue) * 100
-    : 0;
-  const formattedChange =
-    prevValue && value !== undefined
-      ? `${percentageChange > 0 ? "+" : ""}${percentageChange.toFixed(1)}%`
-      : "No previous data";
-
-  const trendUp = percentageChange >= 0;
+const StatCard: React.FC<StatCardProps> = ({ index, title, hint, value, unit, score }) => {
+  const rating = ratingFromScore(score);
+  const style = rating ? RATING_STYLES[rating] : NO_RATING_STYLE;
 
   return (
-    <div
-      className="dash-card animate-fade-up p-4"
-      style={{ animationDelay: `${index * 80}ms` }}
-    >
+    <div className="dash-card animate-fade-up p-4" style={{ animationDelay: `${index * 80}ms` }}>
       <div className="flex items-center gap-2 mb-1">
-        <div className="w-2 h-2 rounded-full bg-blue-400 animate-glow-pulse"></div>
+        <div className={`w-2 h-2 rounded-full ${style.dot}`}></div>
         <span className="text-xs text-gray-400">{title}</span>
       </div>
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-white">
-          {value !== undefined ? `${value} ${unit}` : "N/A"}
-        </h3>
-        <div className="h-10 w-20">
-          <svg viewBox="0 0 100 30" className="w-full h-full">
-            <path
-              d="M0,15 L10,20 L20,10 L30,15 L40,5 L50,15 L60,10 L70,20 L80,15 L90,5 L100,10"
-              fill="none"
-              stroke={isPositive ? "#22c55e" : "#ef4444"}
-              strokeWidth="2"
-              strokeLinecap="round"
-              className="drop-shadow-[0_0_4px_rgba(34,197,94,0.4)]"
-            />
-          </svg>
-        </div>
-      </div>
-      <div className="flex items-center text-xs">
-        {trendUp ? (
-          <ArrowUpIcon className="w-3 h-3 text-green-500" />
-        ) : (
-          <ArrowDownIcon className="w-3 h-3 text-red-500" />
-        )}
-        <span
-          className={`mr-1 font-medium ${
-            trendUp ? "text-green-500" : "text-red-500"
-          }`}
-        >
-          {formattedChange}
-        </span>
-        <span className="text-gray-400">vs previous</span>
+      <h3 className="text-2xl font-bold text-white">
+        {value}
+        {unit && value !== "N/A" && <span className="text-sm text-gray-400 ml-1">{unit}</span>}
+      </h3>
+      <div className="flex items-center justify-between text-xs mt-1">
+        <span className="text-gray-500">{hint}</span>
+        <span className={`font-medium ${style.text}`}>{style.label}</span>
       </div>
     </div>
   );
 };
 
-export default StatsCard;
+export default StatsCards;

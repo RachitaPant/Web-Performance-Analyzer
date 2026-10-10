@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { auth } from "@/lib/firebaseClient";
+import { auth, FIREBASE_UNAVAILABLE_MESSAGE } from "@/lib/firebaseClient";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -19,6 +19,7 @@ const AuthForm: React.FC = () => {
     setMessage(null);
 
     try {
+      if (!auth) throw new Error(FIREBASE_UNAVAILABLE_MESSAGE);
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
         setMessage("Check your email to confirm sign up!");

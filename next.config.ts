@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["lighthouse", "chrome-launcher"],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

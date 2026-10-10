@@ -1,74 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Zap, AlertTriangle } from "lucide-react";
+import { Zap, AlertTriangle, Smartphone, Monitor, History } from "lucide-react";
 import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Shared interfaces (could be moved to a types file for reusability)
-export interface PuppeteerData {
-  jsExecutionTime?: number | null;
-  cpuUsage?: number | null;
-  memoryUsage?: number | null;
-  diskIO?: number | null;
-  networkRequests?: string[];
-  performanceMetrics?: Record<string, unknown>;
-  totalDomNodes?: number;
-  thirdPartyRequestsCount?: number;
-  resourceBreakdown?: Record<string, number>;
-  domContentLoadedTime?: number | 0;
-  largeImages?: { src: string; width: number; height: number }[];
-  longTasks?: { name: string; startTime: number; duration: number }[];
-  unusedJSBytes?: {
-    name: string;
-    transferSize: number;
-    encodedBodySize: number;
-  }[];
-}
-
-export interface LighthouseAudit {
-  score?: number | null;
-  numericValue?: number | null;
-  displayValue?: string;
-}
-
-export interface LighthouseAudits {
-  "is-on-https": LighthouseAudit;
-  "first-contentful-paint": LighthouseAudit;
-  "largest-contentful-paint": LighthouseAudit;
-  "max-potential-fid": LighthouseAudit;
-  "speed-index": LighthouseAudit;
-  interactive: LighthouseAudit;
-  "cumulative-layout": LighthouseAudit;
-  "server-response-time": LighthouseAudit;
-  "mainthread-work-breakdown": LighthouseAudit;
-}
-
-export interface LighthouseCategories {
-  performance?: { score: number };
-  accessibility?: { score: number };
-  "best-practices"?: { score: number };
-  seo?: { score: number };
-}
-
-export interface LighthouseData {
-  audits?: Partial<LighthouseAudits>;
-  categories?: Partial<LighthouseCategories>;
-}
-
-export interface AnalysisData {
-  puppeteerData?: PuppeteerData;
-  lighthouseData?: LighthouseData;
-  url?: string;
-}
+import { ReportSchema, toHistorySnapshot, type Report, type Strategy } from "@/lib/report";
 
 interface FormProps {
-  setAnalysisData: (data: AnalysisData) => void;
+  setReport: (data: Report) => void;
 }
+
+// How long ago a cached report was generated, e.g. "12 min ago".
+const timeAgo = (iso: string) => {
+  const minutes = Math.round((Date.now() - Date.parse(iso)) / 60_000);
+  return minutes < 1 ? "just now" : minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} h ago`;
+};
 
 // Maps backend/network errors to short, non-technical messages for end users
 const getFriendlyErrorMessage = (status: number | null, rawMessage?: string): string => {
@@ -81,7 +29,7 @@ const getFriendlyErrorMessage = (status: number | null, rawMessage?: string): st
     case 404:
       return "The analysis service couldn't be found. Please try again shortly.";
     case 429:
-      return "We're getting a lot of requests right now. Please wait a few seconds and try again.";
+      return rawMessage || "We're getting a lot of requests right now. Please wait a few seconds and try again.";
     case 504:
       return rawMessage || "This site is taking too long to analyze. It may be slow or too heavy — try a different URL.";
     case 500:
@@ -102,13 +50,17 @@ const useFormState = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [result, setResult] = useState<AnalysisData | null>(null);
+  const [result, setResult] = useState<Report | null>(null);
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
+  const [strategy, setStrategy] = useState<Strategy>("mobile");
+  const [fromCache, setFromCache] = useState(false);
 
+  // Bare domains are fine ("example.com"); the API normalizes and does the real validation.
   const isValidUrl = (str: string) => {
+    const s = str.trim();
     try {
-      new URL(str);
-      return true;
+      new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(s) ? s : `https://${s}`);
+      return s.length > 0;
     } catch {
       return false;
     }
@@ -117,6 +69,8 @@ const useFormState = () => {
   return {
     url,
     setUrl,
+    strategy,
+    setStrategy,
     loading,
     setLoading,
     error,
@@ -128,21 +82,26 @@ const useFormState = () => {
     isValidUrl,
     retryCountdown,
     setRetryCountdown,
+    fromCache,
+    setFromCache,
   };
 };
 
 // Modularized hook for handling analysis submission, with auto-retry-with-countdown on rate limits
 const useAnalysisSubmit = (
   url: string,
+  strategy: Strategy,
   setLoading: (loading: boolean) => void,
   setError: (error: string) => void,
-  setResult: (result: AnalysisData | null) => void,
-  setAnalysisData: (data: AnalysisData) => void,
+  setResult: (result: Report | null) => void,
+  setReport: (data: Report) => void,
   isValidUrl: (str: string) => boolean,
   retryCountdown: number | null,
-  setRetryCountdown: (value: number | null) => void
+  setRetryCountdown: (value: number | null) => void,
+  setFromCache: (fromCache: boolean) => void
 ) => {
   const retryAttemptsRef = useRef(0);
+  const refreshRef = useRef(false);
 
   const performAnalysis = useCallback(async () => {
     setLoading(true);
@@ -153,14 +112,16 @@ const useAnalysisSubmit = (
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: url.trim(), strategy, refresh: refreshRef.current }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         const friendlyMessage = getFriendlyErrorMessage(res.status, body?.error);
+        // Only auto-retry short upstream throttling; our own quota limit says how long to wait.
+        const shortWait = !(body?.retryAfterSeconds > RETRY_SECONDS);
 
-        if (res.status === 429 && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
+        if (res.status === 429 && shortWait && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
           retryAttemptsRef.current += 1;
           setError(friendlyMessage);
           setLoading(false);
@@ -171,12 +132,16 @@ const useAnalysisSubmit = (
         throw new Error(friendlyMessage);
       }
 
-      const analysis_data = await res.json();
-      const resultWithUrl: AnalysisData = { ...analysis_data, url };
+      const parsed = ReportSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        console.error("Unexpected report shape:", parsed.error);
+        throw new Error(getFriendlyErrorMessage(500));
+      }
 
       retryAttemptsRef.current = 0;
-      setResult(resultWithUrl);
-      setAnalysisData(resultWithUrl);
+      setFromCache(res.headers.get("X-Cache") === "HIT");
+      setResult(parsed.data);
+      setReport(parsed.data);
       setError("");
     } catch (err) {
       const isNetworkError = err instanceof TypeError;
@@ -190,7 +155,7 @@ const useAnalysisSubmit = (
     } finally {
       setLoading(false);
     }
-  }, [url, setLoading, setError, setResult, setAnalysisData, setRetryCountdown]);
+  }, [url, strategy, setLoading, setError, setResult, setReport, setRetryCountdown, setFromCache]);
 
   // Ticks the countdown every second; fires the retry once it reaches zero
   useEffect(() => {
@@ -217,60 +182,47 @@ const useAnalysisSubmit = (
       return;
     }
     retryAttemptsRef.current = 0;
+    refreshRef.current = false;
     setRetryCountdown(null);
     performAnalysis();
   };
 
-  return handleSubmit;
+  // Re-runs the current URL, bypassing the server-side report cache.
+  const rerunFresh = () => {
+    retryAttemptsRef.current = 0;
+    refreshRef.current = true;
+    setRetryCountdown(null);
+    performAnalysis();
+  };
+
+  return { handleSubmit, rerunFresh };
 };
 
 // Modularized hook for saving search to Firebase
-const useSaveSearch = (url: string, setSuccess: (success: boolean) => void) => {
+const useSaveSearch = (setSuccess: (success: boolean) => void) => {
   return useCallback(
-    async (result: AnalysisData | null) => {
+    async (result: Report | null) => {
       if (!result) {
         toast.error("No analysis data to save");
         return;
       }
 
+      if (!auth || !db) {
+        toast.error("Saving history isn't available on this deployment");
+        return;
+      }
       const user = auth.currentUser;
       if (!user) {
         toast.error("You must be logged in to save");
         return;
       }
 
-      const analysis_json = {
-        puppeteerData: {
-          jsExecutionTime: result?.puppeteerData?.jsExecutionTime ?? null,
-          cpuUsage: result?.puppeteerData?.cpuUsage ?? null,
-          memoryUsage: result?.puppeteerData?.memoryUsage ?? null,
-          diskIO: result?.puppeteerData?.diskIO ?? null,
-        },
-        lighthouseData: {
-          audits: {
-            "is-on-https": {
-              score:
-                result?.lighthouseData?.audits?.["is-on-https"]?.score ?? null,
-            },
-            "first-contentful-paint": {
-              score:
-                result?.lighthouseData?.audits?.["first-contentful-paint"]
-                  ?.score ?? null,
-            },
-            "largest-contentful-paint": {
-              score:
-                result?.lighthouseData?.audits?.["largest-contentful-paint"]
-                  ?.score ?? null,
-            },
-          },
-        },
-      };
-
       try {
+        // Keyed by the normalized report URL so trend queries match across saves.
         await addDoc(collection(db, "users", user.uid, "history"), {
-          url,
+          url: result.url,
           user_id: user.uid,
-          analysis_data: analysis_json,
+          analysis_data: toHistorySnapshot(result),
           created_at: new Date(),
         });
         setSuccess(true);
@@ -280,7 +232,7 @@ const useSaveSearch = (url: string, setSuccess: (success: boolean) => void) => {
         toast.error("Failed to save history");
       }
     },
-    [url]
+    [setSuccess]
   );
 };
 
@@ -328,20 +280,58 @@ const RetryCountdown: React.FC<{ secondsLeft: number; total: number }> = ({
   );
 };
 
+const StrategyToggle: React.FC<{
+  value: Strategy;
+  onChange: (strategy: Strategy) => void;
+  disabled: boolean;
+}> = ({ value, onChange, disabled }) => {
+  const options: { id: Strategy; label: string; Icon: typeof Smartphone }[] = [
+    { id: "mobile", label: "Mobile", Icon: Smartphone },
+    { id: "desktop", label: "Desktop", Icon: Monitor },
+  ];
+  return (
+    <div role="radiogroup" aria-label="Device" className="inline-flex mb-4 rounded-lg border border-blue-500/30 p-1 gap-1">
+      {options.map(({ id, label, Icon }) => (
+        <button
+          key={id}
+          type="button"
+          role="radio"
+          aria-checked={value === id}
+          disabled={disabled}
+          onClick={() => onChange(id)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all disabled:cursor-not-allowed ${
+            value === id
+              ? "bg-blue-500/20 text-blue-200 border border-blue-400/40"
+              : "text-gray-400 hover:text-white border border-transparent"
+          }`}
+        >
+          <Icon className="h-4 w-4" /> {label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 // Modularized component for the form UI
 const AnalysisFormUI: React.FC<{
   url: string;
   setUrl: (url: string) => void;
+  strategy: Strategy;
+  setStrategy: (strategy: Strategy) => void;
   loading: boolean;
   error: string;
   success: boolean;
   handleSubmit: (e: React.FormEvent) => void;
-  saveSearch: (result: AnalysisData | null) => void;
-  result: AnalysisData | null;
+  saveSearch: (result: Report | null) => void;
+  result: Report | null;
   retryCountdown: number | null;
+  fromCache: boolean;
+  rerunFresh: () => void;
 }> = ({
   url,
   setUrl,
+  strategy,
+  setStrategy,
   loading,
   error,
   success,
@@ -349,10 +339,9 @@ const AnalysisFormUI: React.FC<{
   saveSearch,
   result,
   retryCountdown,
+  fromCache,
+  rerunFresh,
 }) => {
-  const isResultValid = (result: any): result is AnalysisData =>
-    result && result.puppeteerData && result.lighthouseData;
-
   return (
     <div className="w-full mx-auto dash-card animate-fade-up p-6 md:p-8">
       <div className="flex items-center gap-2 mb-2">
@@ -362,13 +351,16 @@ const AnalysisFormUI: React.FC<{
         </h1>
       </div>
       <p className="text-sm text-gray-400 mb-6">
-        Note: Limited to 1 audit per session to manage GCP costs. Audits may
-        take time.
+        Runs a full Lighthouse audit via Google PageSpeed Insights, plus
+        real-user Chrome UX data where available. Usually takes 20–40 seconds.
       </p>
+      <StrategyToggle value={strategy} onChange={setStrategy} disabled={loading} />
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
-          type="url"
-          placeholder="Enter website URL (e.g., https://example.com)"
+          type="text"
+          inputMode="url"
+          aria-label="Website URL"
+          placeholder="Enter website URL (e.g., example.com)"
           className="flex-1 p-3 bg-blue-950/40 text-white border border-blue-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-400 transition-all placeholder:text-gray-500"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -388,7 +380,7 @@ const AnalysisFormUI: React.FC<{
           <button
             type="button"
             onClick={() => saveSearch(result)}
-            disabled={!isResultValid(result) || loading || retryCountdown !== null}
+            disabled={!result || loading || retryCountdown !== null}
             className="flex-1 sm:flex-none border border-blue-500/30 text-white px-6 py-3 rounded-lg hover:border-blue-400 hover:bg-blue-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Save
@@ -401,6 +393,16 @@ const AnalysisFormUI: React.FC<{
           <div className="h-2 w-2/3 rounded-full shimmer-bg" />
           <div className="h-2 w-1/2 rounded-full shimmer-bg" />
           <div className="h-2 w-5/6 rounded-full shimmer-bg" />
+        </div>
+      )}
+
+      {fromCache && result && !loading && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400 animate-fade-up">
+          <History className="h-3.5 w-3.5" />
+          <span>Showing a cached result from {timeAgo(result.fetchedAt)}.</span>
+          <button type="button" onClick={rerunFresh} className="text-blue-300 hover:text-blue-200 underline underline-offset-2">
+            Run a fresh audit
+          </button>
         </div>
       )}
 
@@ -424,10 +426,12 @@ const AnalysisFormUI: React.FC<{
 };
 
 // Main Form component, now simplified and composed of modular parts
-const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
+const Form: React.FC<FormProps> = ({ setReport }) => {
   const {
     url,
     setUrl,
+    strategy,
+    setStrategy,
     loading,
     setLoading,
     error,
@@ -439,26 +443,32 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
     isValidUrl,
     retryCountdown,
     setRetryCountdown,
+    fromCache,
+    setFromCache,
   } = useFormState();
 
-  const handleSubmit = useAnalysisSubmit(
+  const { handleSubmit, rerunFresh } = useAnalysisSubmit(
     url,
+    strategy,
     setLoading,
     setError,
     setResult,
-    setAnalysisData,
+    setReport,
     isValidUrl,
     retryCountdown,
-    setRetryCountdown
+    setRetryCountdown,
+    setFromCache
   );
 
-  const saveSearch = useSaveSearch(url, setSuccess);
+  const saveSearch = useSaveSearch(setSuccess);
 
   return (
     <div className="flex justify-center items-center my-8 px-4 w-full ">
       <AnalysisFormUI
         url={url}
         setUrl={setUrl}
+        strategy={strategy}
+        setStrategy={setStrategy}
         loading={loading}
         error={error}
         success={success}
@@ -466,6 +476,8 @@ const Form: React.FC<FormProps> = ({ setAnalysisData }) => {
         saveSearch={saveSearch}
         result={result}
         retryCountdown={retryCountdown}
+        fromCache={fromCache}
+        rerunFresh={rerunFresh}
       />
     </div>
   );

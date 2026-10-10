@@ -7,27 +7,31 @@ import StatsCards from "../StatsCards/page";
 import Charts from "../Charts/page";
 import BottomStats from "../BottomStats/page";
 import Form from "../Form/page";
-import { AnalysisData } from "../Form/page";
+import DataSources from "../DataSources/page";
+import AiInsights from "../AiInsights/page";
+import type { Report } from "@/lib/report";
 
 export default function Dashboard() {
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [report, setReport] = useState<Report | null>(null);
 
   return (
     <div className="flex h-screen bg-[#020e1d] w-full overflow-hidden">
       <div className="flex-1 overflow-auto">
         <Header />
         <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-          <Form setAnalysisData={setAnalysisData} />
+          <Form setReport={setReport} />
 
-          {analysisData && (
+          {report && (
             <div className="space-y-6">
-              <StatsCards data={analysisData || {}} />
-              <Charts data={analysisData || {}} />
-              <BottomStats data={analysisData || {}} />
+              <DataSources sources={report.sources} />
+              <StatsCards report={report} />
+              <AiInsights report={report} />
+              <Charts report={report} />
+              <BottomStats report={report} />
             </div>
           )}
 
-          {!analysisData && (
+          {!report && (
             <div className="dash-card animate-fade-up flex flex-col items-center justify-center text-center py-20 px-6">
               <div className="mb-4 animate-glow-pulse rounded-full flex items-center justify-center">
                 <Zap className="w-12 h-12 text-pink-400" />

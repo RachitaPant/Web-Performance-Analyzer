@@ -1,0 +1,313 @@
+{
+ "schemaVersion": 2,
+ "url": "https://www.amazon.in/",
+ "finalUrl": "https://www.amazon.in/",
+ "strategy": "desktop",
+ "fetchedAt": "2026-10-06T04:12:18.909Z",
+ "lighthouseVersion": "13.5.0",
+ "analysisMs": 46221,
+ "categories": {
+  "performance": 44,
+  "accessibility": 92,
+  "bestPractices": 100,
+  "seo": 92
+ },
+ "lab": {
+  "fcp": {
+   "value": 992.394233167436,
+   "displayValue": "1.0 s",
+   "score": 0.87
+  },
+  "lcp": {
+   "value": 1377.3846217798298,
+   "displayValue": "1.4 s",
+   "score": 0.84
+  },
+  "tbt": {
+   "value": 598.3629753732699,
+   "displayValue": "600 ms",
+   "score": 0.2
+  },
+  "cls": {
+   "value": 0.3991710319424261,
+   "displayValue": "0.399",
+   "score": 0.25
+  },
+  "speedIndex": {
+   "value": 3184.7814038809065,
+   "displayValue": "3.2 s",
+   "score": 0.22
+  },
+  "ttfb": {
+   "value": 1299,
+   "displayValue": "Root document took 1,300 ms",
+   "score": 0
+  }
+ },
+ "field": {
+  "scope": "url",
+  "lcp": {
+   "p75": 1534,
+   "rating": "good"
+  },
+  "inp": {
+   "p75": 114,
+   "rating": "good"
+  },
+  "cls": {
+   "p75": 0.06,
+   "rating": "good"
+  },
+  "fcp": {
+   "p75": 1146,
+   "rating": "good"
+  },
+  "ttfb": {
+   "p75": 705,
+   "rating": "good"
+  }
+ },
+ "fieldHistory": null,
+ "security": {
+  "grade": "C-",
+  "score": 45,
+  "testsPassed": 8,
+  "testsFailed": 4,
+  "detailsUrl": "https://developer.mozilla.org/en-US/observatory/analyze?host=www.amazon.in"
+ },
+ "sources": {
+  "pagespeed": {
+   "status": "ok",
+   "message": null,
+   "ms": 49559
+  },
+  "cruxHistory": {
+   "status": "unavailable",
+   "message": "Chrome UX Report API isn't enabled for this API key. Enable it in Google Cloud to see trends.",
+   "ms": 439
+  },
+  "observatory": {
+   "status": "ok",
+   "message": null,
+   "ms": 1226
+  }
+ },
+ "diagnostics": {
+  "domSize": 1950,
+  "requestCount": 154,
+  "totalBytes": 3503902,
+  "thirdPartyRequests": 132,
+  "thirdPartyBytes": 2804329,
+  "mainThreadMs": 4592.679000000002,
+  "jsBootupMs": 2251.827999999984,
+  "resources": [
+   {
+    "type": "image",
+    "label": "Image",
+    "requests": 87,
+    "bytes": 1459276
+   },
+   {
+    "type": "font",
+    "label": "Font",
+    "requests": 21,
+    "bytes": 641271
+   },
+   {
+    "type": "script",
+    "label": "Script",
+    "requests": 21,
+    "bytes": 565469
+   },
+   {
+    "type": "document",
+    "label": "Document",
+    "requests": 2,
+    "bytes": 457259
+   },
+   {
+    "type": "other",
+    "label": "Other",
+    "requests": 15,
+    "bytes": 241225
+   },
+   {
+    "type": "stylesheet",
+    "label": "Stylesheet",
+    "requests": 8,
+    "bytes": 139402
+   }
+  ],
+  "mainThread": [
+   {
+    "group": "scriptEvaluation",
+    "label": "Script Evaluation",
+    "ms": 2167.045000000007
+   },
+   {
+    "group": "styleLayout",
+    "label": "Style & Layout",
+    "ms": 925.9770000000012
+   },
+   {
+    "group": "other",
+    "label": "Other",
+    "ms": 700.4409999999917
+   },
+   {
+    "group": "paintCompositeRender",
+    "label": "Rendering",
+    "ms": 302.4570000000025
+   },
+   {
+    "group": "scriptParseCompile",
+    "label": "Script Parsing & Compilation",
+    "ms": 273.42299999999983
+   },
+   {
+    "group": "parseHTML",
+    "label": "Parse HTML & CSS",
+    "ms": 180.5420000000001
+   },
+   {
+    "group": "garbageCollection",
+    "label": "Garbage Collection",
+    "ms": 42.79400000000005
+   }
+  ],
+  "thirdParties": [
+   {
+    "entity": "media-amazon.com",
+    "bytes": 2799516,
+    "mainThreadMs": 883.4269963502884
+   },
+   {
+    "entity": "Marketplace Web Service",
+    "bytes": 4420,
+    "mainThreadMs": 2.0149999856948853
+   },
+   {
+    "entity": "Amazon Ads",
+    "bytes": 393,
+    "mainThreadMs": 0.14600014686584473
+   }
+  ]
+ },
+ "opportunities": [
+  {
+   "id": "document-latency-insight",
+   "title": "Document request latency",
+   "displayValue": "Est savings of 1,200 ms",
+   "score": 0,
+   "savingsMs": 1200,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 1200,
+    "FCP": 1200
+   }
+  },
+  {
+   "id": "bootup-time",
+   "title": "Reduce JavaScript execution time",
+   "displayValue": "2.3 s",
+   "score": 0,
+   "savingsMs": 600,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "TBT": 600
+   }
+  },
+  {
+   "id": "mainthread-work-breakdown",
+   "title": "Minimize main-thread work",
+   "displayValue": "4.6 s",
+   "score": 0,
+   "savingsMs": 600,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "TBT": 600
+   }
+  },
+  {
+   "id": "font-display-insight",
+   "title": "Font display",
+   "displayValue": "Est savings of 490 ms",
+   "score": 0,
+   "savingsMs": 500,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "FCP": 500,
+    "INP": 0
+   }
+  },
+  {
+   "id": "render-blocking-insight",
+   "title": "Render-blocking requests",
+   "displayValue": "Est savings of 350 ms",
+   "score": 0,
+   "savingsMs": 350,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 350
+   }
+  },
+  {
+   "id": "image-delivery-insight",
+   "title": "Improve image delivery",
+   "displayValue": "Est savings of 962 KiB",
+   "score": 0,
+   "savingsMs": 100,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "LCP": 100,
+    "FCP": 0
+   }
+  },
+  {
+   "id": "unused-javascript",
+   "title": "Reduce unused JavaScript",
+   "displayValue": "Est savings of 214 KiB",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 219343,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 0
+   }
+  },
+  {
+   "id": "unused-css-rules",
+   "title": "Reduce unused CSS",
+   "displayValue": "Est savings of 211 KiB",
+   "score": 0.5,
+   "savingsMs": 0,
+   "savingsBytes": 216205,
+   "metricSavings": {
+    "LCP": 0,
+    "FCP": 0
+   }
+  },
+  {
+   "id": "cls-culprits-insight",
+   "title": "Layout shift culprits",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {
+    "CLS": 0
+   }
+  },
+  {
+   "id": "forced-reflow-insight",
+   "title": "Forced reflow",
+   "displayValue": null,
+   "score": 0,
+   "savingsMs": 0,
+   "savingsBytes": 0,
+   "metricSavings": {}
+  }
+ ],
+ "screenshot": null
+}

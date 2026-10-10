@@ -39,7 +39,7 @@ const HistoryPage = () => {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!user) {
+      if (!db || !user) {
         console.warn("No user session found.");
         setLoading(false);
         return;
