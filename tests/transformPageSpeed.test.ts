@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import fixture from "./fixtures/psi-webdev-mobile.json";
 import { ReportSchema } from "@/lib/report";
-import { transformPageSpeed, type PsiResponse } from "@/server/transformPageSpeed";
+import { transformPageSpeed, type PsiResponse } from "@/lib/transformPageSpeed";
 
 // Fixture: real PSI v5 response for https://web.dev/ (mobile, Lighthouse 13.5), trimmed.
 const psi = fixture as unknown as PsiResponse;

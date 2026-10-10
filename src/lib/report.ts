@@ -151,6 +151,9 @@ export const ReportSchema = z.object({
 
 export type Report = z.infer<typeof ReportSchema>;
 
+// The part of a Report derived from PageSpeed alone (built on the server or in the browser).
+export const PageSpeedReportSchema = ReportSchema.omit({ fieldHistory: true, security: true, sources: true });
+
 export const AnalyzeRequestSchema = z.object(
   {
     url: z.string({ error: "Please enter a website URL." }).trim().min(1, "Please enter a website URL."),

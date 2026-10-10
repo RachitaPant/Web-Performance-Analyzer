@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import * as analyze from "@/app/api/analyze/route";
+import * as enrich from "@/app/api/analyze/enrich/route";
 import * as chat from "@/app/api/chat/route";
 import * as insights from "@/app/api/insights/route";
 
@@ -9,6 +10,7 @@ const VERCEL_HOBBY_MAX_DURATION = 300;
 
 test.each([
   ["api/analyze", analyze.maxDuration],
+  ["api/analyze/enrich", enrich.maxDuration],
   ["api/chat", chat.maxDuration],
   ["api/insights", insights.maxDuration],
 ])("%s maxDuration fits the Vercel Hobby limit", (_route, maxDuration) => {

@@ -3,7 +3,7 @@ import cruxFixture from "./fixtures/crux-history-record.json";
 import observatoryFixture from "./fixtures/observatory-webdev.json";
 import type { Report } from "@/lib/report";
 import { transformCruxHistory } from "@/server/cruxHistory";
-import { transformPageSpeed, type PsiResponse } from "@/server/transformPageSpeed";
+import { transformPageSpeed, type PsiResponse } from "@/lib/transformPageSpeed";
 
 export const psi = psiFixture as unknown as PsiResponse;
 export const cruxRecord = cruxFixture.record;

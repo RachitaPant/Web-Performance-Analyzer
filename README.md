@@ -50,6 +50,13 @@ Video: [LinkedIn demo](https://www.linkedin.com/posts/rachita-pant_webperformanc
 
 ## Architecture
 ```
+Browser path (when NEXT_PUBLIC_PSI_BROWSER_KEY is set):
+  browser ──▶ Google PageSpeed directly (no serverless time limit; heavy pages take 100 s+)
+          ──▶ transformPageSpeed() in the browser
+          ──POST /api/analyze/enrich {pagespeed}──▶ validate + add CrUX history & Observatory
+          (client-supplied data is never written to the shared cache)
+
+Server path (fallback, no browser key):
 Browser ──POST /api/analyze {url, strategy, refresh?}──▶ Next.js route handler
   1. zod validation + URL normalization (blocks localhost / private hosts)
   2. report cache lookup ── hit ──▶ return (X-Cache: HIT, no quota used)
@@ -93,9 +100,13 @@ limit are shared across serverless instances (see `.env.example`).
 ## Deploying to Vercel
 - Set the env vars from `.env.example` for **Production and Preview** (`GOOGLE_PAGESPEED_API_KEY`,
   `AI_API_KEY`, the `NEXT_PUBLIC_FIREBASE_*` values).
-- Enable **Fluid Compute** (Project → Settings → Functions). Heavy pages can take Google PageSpeed
-  100 s or more, and `/api/analyze` asks for 180 s; without Fluid Compute, Hobby caps functions at
-  60 s and rejects the deployment. A test (`tests/routeConfig.test.ts`) guards these limits.
+- Enable **Fluid Compute** (Project → Settings → Functions). `/api/analyze` asks for 180 s; without
+  Fluid Compute, Hobby caps functions at 60 s and rejects the deployment. A test
+  (`tests/routeConfig.test.ts`) guards these limits.
+- Recommended: set `NEXT_PUBLIC_PSI_BROWSER_KEY` (a second Google key restricted to your domain's
+  HTTP referrers and the PageSpeed Insights API) so PageSpeed runs in the browser. Heavy pages such as
+  vercel.com take PSI 100 s+, and over 150 s when called from Vercel, so the server path times out
+  on them; in the browser they complete. Redeploy after setting it (it's inlined at build time).
 
 ## Scripts
 | Command | What it does |

@@ -6,7 +6,8 @@ import { db, auth } from "@/lib/firebaseClient";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ReportSchema, toHistorySnapshot, type Report, type Strategy } from "@/lib/report";
+import { toHistorySnapshot, type Report, type Strategy } from "@/lib/report";
+import { ReportRequestError, requestReport, usesBrowserPageSpeed } from "@/lib/clientAnalysis";
 
 interface FormProps {
   setReport: (data: Report) => void;
@@ -109,47 +110,33 @@ const useAnalysisSubmit = (
     setResult(null);
 
     try {
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim(), strategy, refresh: refreshRef.current }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        const friendlyMessage = getFriendlyErrorMessage(res.status, body?.error);
+      const { report, cached } = await requestReport(url, strategy, refreshRef.current);
+      retryAttemptsRef.current = 0;
+      setFromCache(cached);
+      setResult(report);
+      setReport(report);
+      setError("");
+    } catch (err) {
+      if (err instanceof ReportRequestError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.status, err.message || undefined);
         // Only auto-retry short upstream throttling; our own quota limit says how long to wait.
-        const shortWait = !(body?.retryAfterSeconds > RETRY_SECONDS);
-
-        if (res.status === 429 && shortWait && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
+        const shortWait = !((err.retryAfterSeconds ?? 0) > RETRY_SECONDS);
+        if (err.status === 429 && shortWait && retryAttemptsRef.current < MAX_AUTO_RETRIES) {
           retryAttemptsRef.current += 1;
           setError(friendlyMessage);
           setLoading(false);
           setRetryCountdown(RETRY_SECONDS);
           return;
         }
-
-        throw new Error(friendlyMessage);
       }
-
-      const parsed = ReportSchema.safeParse(await res.json());
-      if (!parsed.success) {
-        console.error("Unexpected report shape:", parsed.error);
-        throw new Error(getFriendlyErrorMessage(500));
-      }
-
-      retryAttemptsRef.current = 0;
-      setFromCache(res.headers.get("X-Cache") === "HIT");
-      setResult(parsed.data);
-      setReport(parsed.data);
-      setError("");
-    } catch (err) {
       const isNetworkError = err instanceof TypeError;
       const errorMessage = isNetworkError
         ? getFriendlyErrorMessage(null)
-        : err instanceof Error
-          ? err.message
-          : getFriendlyErrorMessage(500);
+        : err instanceof ReportRequestError
+          ? getFriendlyErrorMessage(err.status, err.message || undefined)
+          : err instanceof Error
+            ? err.message
+            : getFriendlyErrorMessage(500);
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -352,7 +339,8 @@ const AnalysisFormUI: React.FC<{
       </div>
       <p className="text-sm text-gray-400 mb-6">
         Runs a full Lighthouse audit via Google PageSpeed Insights, plus
-        real-user Chrome UX data where available. Usually takes 20–40 seconds.
+        real-user Chrome UX data where available. Usually takes 20–40 seconds
+        {usesBrowserPageSpeed() ? "; very heavy pages can take a few minutes, so keep this tab open." : "."}
       </p>
       <StrategyToggle value={strategy} onChange={setStrategy} disabled={loading} />
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
