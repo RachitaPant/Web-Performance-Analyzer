@@ -13,6 +13,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // No Firebase config: nobody can be signed in, so stop "loading" right away.
+    if (!auth) {
+      queueMicrotask(() => setLoading(false));
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);

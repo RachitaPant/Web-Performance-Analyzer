@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Rocket, ShieldCheck } from "lucide-react";
-import { auth } from "@/lib/firebaseClient";
+import { auth, FIREBASE_UNAVAILABLE_MESSAGE } from "@/lib/firebaseClient";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -27,6 +27,7 @@ export default function SitePulseLogin() {
     setLoading(true);
 
     try {
+      if (!auth) throw new Error(FIREBASE_UNAVAILABLE_MESSAGE);
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccess("Login successful! Redirecting...");
@@ -59,6 +60,7 @@ export default function SitePulseLogin() {
 
     setLoading(true);
     try {
+      if (!auth) throw new Error(FIREBASE_UNAVAILABLE_MESSAGE);
       await sendPasswordResetEmail(auth, email);
       setSuccess("Password reset email sent! Check your inbox.");
     } catch (err) {
@@ -75,6 +77,7 @@ export default function SitePulseLogin() {
     setLoading(true);
 
     try {
+      if (!auth) throw new Error(FIREBASE_UNAVAILABLE_MESSAGE);
       await signInAnonymously(auth);
       setSuccess("Signed in as demo user! Redirecting...");
       setTimeout(() => {

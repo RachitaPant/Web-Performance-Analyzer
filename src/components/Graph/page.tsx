@@ -29,7 +29,7 @@ export const Graph = ({ site, strategy, current }: GraphProps) => {
   const [history, setHistory] = useState<Point[]>([]);
 
   useEffect(() => {
-    if (!user || !site) return;
+    if (!db || !user || !site) return;
 
     // Single-field filter needs no composite index; ordering happens client-side.
     const q = query(collection(db, "users", user.uid, "history"), where("url", "==", site));

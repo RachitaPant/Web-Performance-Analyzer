@@ -207,6 +207,10 @@ const useSaveSearch = (setSuccess: (success: boolean) => void) => {
         return;
       }
 
+      if (!auth || !db) {
+        toast.error("Saving history isn't available on this deployment");
+        return;
+      }
       const user = auth.currentUser;
       if (!user) {
         toast.error("You must be logged in to save");
