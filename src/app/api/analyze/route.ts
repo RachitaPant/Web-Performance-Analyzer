@@ -5,8 +5,8 @@ import { AnalysisError, normalizeUrl } from "@/server/pagespeed";
 import { clientIdFrom, limitAnalyze } from "@/server/rateLimit";
 import { getCachedReport, reportCacheKey, setCachedReport } from "@/server/reportCache";
 
-// Must exceed PSI_TIMEOUT_MS (100s) so slow audits fail with a friendly 504, not a platform kill.
-export const maxDuration = 120;
+// Vercel Hobby's limit. PSI has a 50 s deadline, so slow audits end in a friendly 504, not a platform kill.
+export const maxDuration = 60;
 
 const minutes = (seconds: number) => Math.max(1, Math.ceil(seconds / 60));
 

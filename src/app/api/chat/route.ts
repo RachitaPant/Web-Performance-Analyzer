@@ -6,7 +6,8 @@ import { AiError } from "@/server/ai/llm";
 import { streamChatAnswer } from "@/server/ai/chat";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
 
-export const maxDuration = 120;
+// Vercel Hobby's function limit.
+export const maxDuration = 60;
 
 const MAX_TURNS = 20;
 

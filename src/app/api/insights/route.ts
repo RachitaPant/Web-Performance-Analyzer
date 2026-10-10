@@ -8,7 +8,8 @@ import { generateInsights } from "@/server/ai/insights";
 import { cacheGet, cacheSet, hashKey } from "@/server/kvCache";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
 
-export const maxDuration = 120;
+// Vercel Hobby's function limit.
+export const maxDuration = 60;
 
 // Bump when the prompt or output schema changes so cached insights are regenerated.
 const INSIGHTS_VERSION = "v1";

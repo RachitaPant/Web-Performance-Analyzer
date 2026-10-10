@@ -5,7 +5,8 @@ import { AiError, type JsonRequest, type JsonResult, type LlmClient, type LlmUsa
 // Adapter for any OpenAI-compatible Chat Completions API (Groq, OpenRouter, Gemini's compat
 // endpoint, OpenAI, Ollama, ...). Plain fetch — no vendor SDK.
 
-const REQUEST_TIMEOUT_MS = 60_000;
+// Per request; a fallback attempt (and a JSON repair) must still fit the 60 s function limit.
+const REQUEST_TIMEOUT_MS = 25_000;
 const MAX_OUTPUT_TOKENS = 8_000; // includes reasoning tokens on reasoning models
 const MAX_RETRY_AFTER_WAIT_MS = 5_000;
 

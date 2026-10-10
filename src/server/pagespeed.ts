@@ -3,8 +3,10 @@ import type { PsiResponse } from "./transformPageSpeed";
 
 const PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 const CATEGORIES = ["performance", "accessibility", "best-practices", "seo"];
-// Cold PSI runs on heavy sites (e.g. github.com) can exceed 60s; cached re-runs take ~10s.
-const PSI_TIMEOUT_MS = 100_000;
+// One deadline shared by all attempts, so retries can't push the route past Vercel Hobby's
+// 60 s function limit. Cold runs on very heavy sites can exceed it, but PSI caches recent
+// runs, so an immediate retry usually returns in ~10 s.
+const PSI_DEADLINE_MS = 50_000;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1500;
 
@@ -58,18 +60,17 @@ export const fetchPageSpeed = async (
     throw new AnalysisError(500, "Analysis service is not configured. Please contact support.");
   }
 
+  const deadline = AbortSignal.timeout(PSI_DEADLINE_MS);
+
   for (let attempt = 0; ; attempt++) {
     let res: Response;
     try {
-      res = await fetch(buildPsiUrl(url, strategy, apiKey), {
-        signal: AbortSignal.timeout(PSI_TIMEOUT_MS),
-        cache: "no-store",
-      });
+      res = await fetch(buildPsiUrl(url, strategy, apiKey), { signal: deadline, cache: "no-store" });
     } catch (err) {
       if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
         throw new AnalysisError(
           504,
-          "This site is taking too long to analyze. It may be slow or unreachable — try again or use a different URL."
+          "This site took too long to analyze. Please try again — Google caches recent runs, so a retry is usually much faster."
         );
       }
       throw new AnalysisError(502, "Couldn't reach Google PageSpeed Insights. Please try again.");
