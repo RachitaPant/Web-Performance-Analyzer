@@ -3,10 +3,10 @@ import type { PsiResponse } from "./transformPageSpeed";
 
 const PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 const CATEGORIES = ["performance", "accessibility", "best-practices", "seo"];
-// One deadline shared by all attempts, so retries can't push the route past Vercel Hobby's
-// 60 s function limit. Cold runs on very heavy sites can exceed it, but PSI caches recent
-// runs, so an immediate retry usually returns in ~10 s.
-const PSI_DEADLINE_MS = 50_000;
+// One deadline shared by all attempts, kept under the analyze route's maxDuration. Heavy sites
+// genuinely take long on PSI (vercel.com measured ~100–108 s, uncached on repeat), so this
+// needs Fluid Compute's longer limit; see src/app/api/analyze/route.ts.
+const PSI_DEADLINE_MS = 150_000;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1500;
 
@@ -70,7 +70,7 @@ export const fetchPageSpeed = async (
       if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
         throw new AnalysisError(
           504,
-          "This site took too long to analyze. Please try again — Google caches recent runs, so a retry is usually much faster."
+          "This site took too long to analyze — very heavy pages can take Google PageSpeed over two minutes. Please try again later or test a lighter page."
         );
       }
       throw new AnalysisError(502, "Couldn't reach Google PageSpeed Insights. Please try again.");

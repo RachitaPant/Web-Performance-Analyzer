@@ -90,6 +90,13 @@ explain that AI isn't configured.
 For production, optionally add a free [Upstash Redis](https://upstash.com) database so the cache and rate
 limit are shared across serverless instances (see `.env.example`).
 
+## Deploying to Vercel
+- Set the env vars from `.env.example` for **Production and Preview** (`GOOGLE_PAGESPEED_API_KEY`,
+  `AI_API_KEY`, the `NEXT_PUBLIC_FIREBASE_*` values).
+- Enable **Fluid Compute** (Project → Settings → Functions). Heavy pages can take Google PageSpeed
+  100 s or more, and `/api/analyze` asks for 180 s; without Fluid Compute, Hobby caps functions at
+  60 s and rejects the deployment. A test (`tests/routeConfig.test.ts`) guards these limits.
+
 ## Scripts
 | Command | What it does |
 | --- | --- |

@@ -8,7 +8,7 @@ import { generateInsights } from "@/server/ai/insights";
 import { cacheGet, cacheSet, hashKey } from "@/server/kvCache";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
 
-// Vercel Hobby's function limit.
+// AI calls finish in ~5 s; 60 s leaves room for a fallback model and a JSON repair.
 export const maxDuration = 60;
 
 // Bump when the prompt or output schema changes so cached insights are regenerated.

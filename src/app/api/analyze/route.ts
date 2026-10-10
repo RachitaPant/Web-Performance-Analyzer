@@ -5,8 +5,9 @@ import { AnalysisError, normalizeUrl } from "@/server/pagespeed";
 import { clientIdFrom, limitAnalyze } from "@/server/rateLimit";
 import { getCachedReport, reportCacheKey, setCachedReport } from "@/server/reportCache";
 
-// Vercel Hobby's limit. PSI has a 50 s deadline, so slow audits end in a friendly 504, not a platform kill.
-export const maxDuration = 60;
+// Requires Fluid Compute on Vercel Hobby (max 300 s; 60 s without it). PSI has a 150 s deadline,
+// so slow audits end in a friendly 504, not a platform kill.
+export const maxDuration = 180;
 
 const minutes = (seconds: number) => Math.max(1, Math.ceil(seconds / 60));
 

@@ -6,7 +6,7 @@ import { AiError } from "@/server/ai/llm";
 import { streamChatAnswer } from "@/server/ai/chat";
 import { clientIdFrom, limitAi } from "@/server/rateLimit";
 
-// Vercel Hobby's function limit.
+// AI calls finish in ~5 s; 60 s leaves room for a fallback model and a JSON repair.
 export const maxDuration = 60;
 
 const MAX_TURNS = 20;
