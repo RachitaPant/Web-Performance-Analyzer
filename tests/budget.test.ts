@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import { readFileSync } from "node:fs";
-import { BudgetConfigSchema, compareReports, evaluateBudgets, pickMedianRun } from "@/lib/budget";
-import { CI_COMMENT_MARKER, renderCiComment, verdict, type CiSummary } from "@/lib/ciComment";
+import { BudgetConfigSchema, compareReports, evaluateBudgets, pickMedianRun } from "@/ci/budget";
+import { CI_COMMENT_MARKER, renderCiComment, verdict, type CiSummary } from "@/ci/ciComment";
 import type { Report } from "@/lib/report";
 import { makeReport } from "./helpers";
 

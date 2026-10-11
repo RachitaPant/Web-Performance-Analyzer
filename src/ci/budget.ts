@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StrategySchema, type Report } from "./report";
+import { StrategySchema, type Report } from "@/lib/report";
 
 // Performance budgets for CI (.sitepulse/budget.json). Budgets are hard limits that fail the
 // check; regressions compare a deployment against a baseline (usually production) and only

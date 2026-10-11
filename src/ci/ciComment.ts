@@ -1,6 +1,7 @@
 import type { BudgetCheck, Comparison, MetricDelta } from "./budget";
-import { formatBytes, formatMs } from "./format";
-import type { Report, Strategy } from "./report";
+import type { ChangedFiles } from "./changedFiles";
+import { formatBytes, formatMs } from "@/lib/format";
+import type { Report, Strategy } from "@/lib/report";
 
 // Marker that lets the workflow find and update its own comment instead of adding a new one.
 export const CI_COMMENT_MARKER = "<!-- sitepulse-ci -->";
@@ -21,7 +22,13 @@ export interface CiSummary {
   headLabel: string; // e.g. "this PR (preview)"
   baseLabel: string; // e.g. "production"
   runUrl?: string;
+  // The PR's changed files, when known. If none can affect the running app, results are
+  // reported as informational: differences can only be measurement noise.
+  changes?: ChangedFiles | null;
 }
+
+export const noRuntimeChanges = (summary: Pick<CiSummary, "changes">) =>
+  Boolean(summary.changes && summary.changes.total > 0 && summary.changes.runtime.length === 0);
 
 export const formatMetric = (unit: BudgetCheck["unit"], v: number | null) => {
   if (v === null) return "n/a";
@@ -47,13 +54,16 @@ const delta = (d: MetricDelta) => {
 export const verdict = (summary: CiSummary) => {
   const budgetFailed = summary.pages.some((p) => p.budgetChecks.some((c) => !c.pass));
   const regressed = summary.pages.some((p) => p.comparison?.regressed);
-  const failed = budgetFailed || (summary.failOnRegression && regressed);
-  return { budgetFailed, regressed, failed };
+  const informational = noRuntimeChanges(summary);
+  const failed = !informational && (budgetFailed || (summary.failOnRegression && regressed));
+  return { budgetFailed, regressed, failed, informational };
 };
 
 export const renderCiComment = (summary: CiSummary): string => {
-  const { budgetFailed, regressed, failed } = verdict(summary);
-  const headline = failed
+  const { budgetFailed, regressed, failed, informational } = verdict(summary);
+  const headline = informational
+    ? `ℹ️ **No app code changed** — this PR only touches ${summary.changes!.total} non-runtime file(s) (docs, CI, tests), so any differences below are Lighthouse lab noise. Budgets are reported, not enforced.`
+    : failed
     ? budgetFailed
       ? "❌ **Performance budget exceeded**"
       : "❌ **Performance regressed**"

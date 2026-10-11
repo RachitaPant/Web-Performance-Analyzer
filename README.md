@@ -178,7 +178,14 @@ which runs [`scripts/sitepulse-ci.ts`](scripts/sitepulse-ci.ts) on GitHub's runn
 - for pull-request previews, compares against production and lists new or worse Lighthouse opportunities;
 - when something broke or regressed, adds an AI explanation whose causes must cite real evidence;
 - posts one PR comment (updated on each push), writes a job summary and a JSON artifact, and fails the
-  check when a budget is exceeded. Regressions only warn by default, since lab scores vary.
+  check when a budget is exceeded. Regressions only warn by default, since lab scores vary;
+- if a PR changes no app code (only docs, CI, tests, evals, budgets or `src/ci/`), results are reported
+  as informational and budgets aren't enforced, since any difference can only be measurement noise.
+
+**Turn off the Vercel Toolbar for previews.** Vercel injects its toolbar script into preview deployments
+(not production), which adds JavaScript and makes every preview look slower than production. Vercel →
+project → **Settings → General → Vercel Toolbar → Preview: Off** (or set the Preview env var
+`VERCEL_PREVIEW_FEEDBACK_ENABLED=0`).
 
 **Setup** (GitHub repo → **Settings → Secrets and variables → Actions**). Add them as **repository**
 secrets and variables, not environment secrets: environment secrets (Settings → Environments) are only
@@ -259,6 +266,7 @@ Copy [`.env.example`](.env.example) to `.env.local` for local development; set t
 | CI log: *"GOOGLE_PAGESPEED_API_KEY is not available to this job"* | Secrets were added under Settings → Environments | Add them as **repository** secrets (Settings → Secrets and variables → Actions) |
 | CI audits of previews return a login page or 401 | Vercel Deployment Protection | Add `VERCEL_AUTOMATION_BYPASS_SECRET` (step 6) |
 | CI scores swing between runs | Lighthouse lab variance | Keep `runs` at 3 or more; widen budgets |
+| Previews consistently show higher TBT than production | Vercel Toolbar script injected into previews | Turn it off for Preview (step 6) |
 
 ---
 
@@ -336,8 +344,8 @@ Also: `POST /api/analyze/enrich` (browser path), `POST /api/insights`, `POST /ap
 ```
 src/app/            pages and API routes (analyze, analyze/enrich, insights, chat)
 src/components/     dashboard UI
-src/lib/            shared, isomorphic code: report schema, PageSpeed client and transform,
-                    evidence, budgets, CI comment rendering
+src/lib/            shared, isomorphic code: report schema, PageSpeed client and transform, evidence
+src/ci/             CI-only code (budgets, PR comment, changed-file classification); never imported by the app
 src/server/         server-only: data sources, cache, rate limits, AI (llm, providers, prompts, grounding)
 scripts/            sitepulse-ci.ts (the CI runner)
 evals/              AI eval cases, real report fixtures and runner

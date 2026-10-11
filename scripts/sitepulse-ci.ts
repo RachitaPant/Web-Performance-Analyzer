@@ -3,6 +3,7 @@
 //   npx tsx scripts/sitepulse-ci.ts --url https://preview.example.app \
 //     [--baseline-url https://example.app] [--budget .sitepulse/budget.json] \
 //     [--out-md sitepulse.md] [--out-json sitepulse.json] [--run-url <link>]
+//     [--changed-files changed.txt]   # one path per line; PR files, to tell code changes from noise
 //
 // Env: GOOGLE_PAGESPEED_API_KEY (required); AI_* (optional AI explanation, see .env.example);
 // VERCEL_AUTOMATION_BYPASS_SECRET (optional, to audit protected Vercel previews).
@@ -10,15 +11,16 @@
 //
 // Runs on a CI runner, not a serverless function, so heavy pages get PSI's full time.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { BudgetConfigSchema, compareReports, evaluateBudgets, pickMedianRun, type BudgetConfig } from "@/lib/budget";
-import { renderCiComment, verdict, type CiPageResult } from "@/lib/ciComment";
+import { BudgetConfigSchema, compareReports, evaluateBudgets, pickMedianRun, type BudgetConfig } from "@/ci/budget";
+import { noRuntimeChanges, renderCiComment, verdict, type CiPageResult } from "@/ci/ciComment";
+import { classifyChangedFiles } from "@/ci/changedFiles";
 import { requestPageSpeed } from "@/lib/psi";
 import type { Report, Strategy } from "@/lib/report";
 import { transformPageSpeed } from "@/lib/transformPageSpeed";
 import { isAiConfigured } from "@/server/ai/llm";
-import { explainRegression } from "@/server/ai/regression";
+import { explainRegression } from "@/ci/regression";
 import { enrichPageSpeedReport } from "@/server/analyze";
-import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/lib/vercelBypass";
+import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
 
 const PSI_DEADLINE_MS = 5 * 60_000;
 const args = (() => {
@@ -77,6 +79,16 @@ const main = async () => {
   // Only the deployment under test can be a protected preview; the baseline is public production.
   const headProtected = Boolean(bypassSecret);
 
+  const changesPath = args["changed-files"];
+  const changes = changesPath
+    ? existsSync(changesPath)
+      ? classifyChangedFiles(readFileSync(changesPath, "utf8").split(/\r?\n/))
+      : fail(`--changed-files ${changesPath} not found`)
+    : null;
+  if (changes) {
+    console.log(`Changed files: ${changes.total} (${changes.runtime.length} affect the app${changes.runtime.length ? `: ${changes.runtime.slice(0, 5).join(", ")}${changes.runtime.length > 5 ? ", …" : ""}` : ""})`);
+  }
+
   const pages: CiPageResult[] = [];
   for (const page of config.pages) {
     console.log(`Auditing ${page.path} (${page.strategy})…`);
@@ -91,9 +103,10 @@ const main = async () => {
       budgetChecks.some((c) => !c.pass) || comparison?.regressed || (comparison?.opportunityChanges.length ?? 0) > 0;
 
     let ai: CiPageResult["ai"] = null;
-    if (noteworthy && isAiConfigured()) {
+    // With no app code changed there is nothing to explain: differences are measurement noise.
+    if (noteworthy && !noRuntimeChanges({ changes }) && isAiConfigured()) {
       try {
-        ai = await explainRegression(head, comparison, budgetChecks);
+        ai = await explainRegression(head, comparison, budgetChecks, changes?.runtime ?? null);
       } catch (error) {
         console.warn(`  AI explanation skipped: ${error instanceof Error ? error.message : error}`);
       }
@@ -107,6 +120,7 @@ const main = async () => {
     headLabel: args["head-label"] ?? "this deployment",
     baseLabel: args["base-label"] ?? "baseline",
     runUrl: args["run-url"],
+    changes,
   };
   const markdown = redact(renderCiComment(summary));
   const result = verdict(summary);
@@ -118,7 +132,15 @@ const main = async () => {
     writeFileSync(args["out-json"], redact(JSON.stringify({ verdict: result, ...slim }, null, 2)));
   }
   console.log(`\n${markdown}\n`);
-  console.log(result.failed ? "Result: FAILED" : result.regressed ? "Result: passed with warnings" : "Result: passed");
+  console.log(
+    result.failed
+      ? "Result: FAILED"
+      : result.informational
+        ? "Result: informational (no app code changed; budgets not enforced)"
+        : result.regressed
+          ? "Result: passed with warnings"
+          : "Result: passed"
+  );
   process.exit(result.failed ? 1 : 0);
 };
 

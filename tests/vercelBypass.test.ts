@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/lib/vercelBypass";
+import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
 
 const SECRET = "s3cr3t-bypass-value-1234567890abcd";
 const PREVIEW = "https://app-git-feature-team.vercel.app/login?ref=pr";
