@@ -5,7 +5,8 @@
 #   secrets.GOOGLE_PAGESPEED_API_KEY          required (server key; not the browser key)
 #   secrets.AI_API_KEY                        optional, enables the AI explanation (Groq by default)
 #   secrets.VERCEL_AUTOMATION_BYPASS_SECRET   needed if previews use Vercel Deployment Protection
-#   vars.SITEPULSE_PRODUCTION_URL             baseline for PRs, e.g. https://your-app.vercel.app
+#   vars.SITEPULSE_PRODUCTION_URL             baseline for PRs, e.g. https://your-app.vercel.app (a secret also works)
+# Use *repository* secrets: environment secrets are only visible to jobs that declare that environment.
 #   vars.AI_PROVIDER / vars.AI_MODEL          optional, see .env.example
 name: SitePulse performance
 
@@ -50,10 +51,15 @@ jobs:
           AI_MODEL: ${{ vars.AI_MODEL }}
           # Only previews are protected; never send the bypass secret when auditing production.
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ github.event.deployment.environment != 'Production' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
-          BASELINE_URL: ${{ vars.SITEPULSE_PRODUCTION_URL }}
+          BASELINE_URL: ${{ vars.SITEPULSE_PRODUCTION_URL || secrets.SITEPULSE_PRODUCTION_URL }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set +e
+          if [ -z "$GOOGLE_PAGESPEED_API_KEY" ]; then
+            echo "::error::GOOGLE_PAGESPEED_API_KEY is not available to this job. Add it under Settings → Secrets and variables → Actions → Repository secrets (environment secrets aren't visible here)."
+            echo "exit=2" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           ARGS=(--url "$TARGET_URL" --out-md sitepulse.md --out-json sitepulse.json --run-url "$RUN_URL")
           if [ "$IS_PRODUCTION" = "true" ]; then
             ARGS+=(--head-label "production")

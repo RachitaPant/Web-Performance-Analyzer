@@ -180,7 +180,9 @@ which runs [`scripts/sitepulse-ci.ts`](scripts/sitepulse-ci.ts) on GitHub's runn
 - posts one PR comment (updated on each push), writes a job summary and a JSON artifact, and fails the
   check when a budget is exceeded. Regressions only warn by default, since lab scores vary.
 
-**Setup** (GitHub repo → **Settings → Secrets and variables → Actions**):
+**Setup** (GitHub repo → **Settings → Secrets and variables → Actions**). Add them as **repository**
+secrets and variables, not environment secrets: environment secrets (Settings → Environments) are only
+visible to jobs that declare that environment.
 
 | Name | Type | Value |
 | --- | --- | --- |
@@ -254,6 +256,7 @@ Copy [`.env.example`](.env.example) to `.env.local` for local development; set t
 | AI: *"The AI service is busy"* | Free-tier rate limit | Wait a minute; insights are cached per report |
 | Sign-in: *"Sign-in isn't configured"* | Firebase vars missing | Step 3, then restart or redeploy |
 | Saving history fails with a permissions error | Firestore rules not published | Publish [`firestore.rules`](firestore.rules) (step 3.6) |
+| CI log: *"GOOGLE_PAGESPEED_API_KEY is not available to this job"* | Secrets were added under Settings → Environments | Add them as **repository** secrets (Settings → Secrets and variables → Actions) |
 | CI audits of previews return a login page or 401 | Vercel Deployment Protection | Add `VERCEL_AUTOMATION_BYPASS_SECRET` (step 6) |
 | CI scores swing between runs | Lighthouse lab variance | Keep `runs` at 3 or more; widen budgets |
 
