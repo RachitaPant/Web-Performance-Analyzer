@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// SitePulse stores saved audits at users/{uid}/history/{entryId} (see src/components/Form/page.tsx).
+// Each signed-in user may read, create and delete only their own entries; everything else is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/history/{entryId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.user_id == userId;
+      allow update: if false;
+    }
+  }
+}
