@@ -2,6 +2,9 @@
   "name": "sitepulse",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "next dev ",
     "build": "next build",
@@ -10,10 +13,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:firebase": "node test-firebase.cjs",
-    "eval": "tsx --env-file=.env.local evals/run.ts"
+    "eval": "tsx --env-file=.env.local evals/run.ts",
+    "perf:ci": "tsx scripts/sitepulse-ci.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@modelcontextprotocol/server": "^2.3.1",
     "@radix-ui/react-slot": "^1.2.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
@@ -21,6 +26,7 @@
     "clsx": "^2.1.1",
     "firebase": "^12.1.0",
     "lucide-react": "^0.483.0",
+    "mcp-handler": "^2.3.0",
     "next": "16.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

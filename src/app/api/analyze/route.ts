@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import { AnalyzeRequestSchema } from "@/lib/report";
-import { analyze } from "@/server/analyze";
-import { AnalysisError, normalizeUrl } from "@/server/pagespeed";
-import { clientIdFrom, limitAnalyze } from "@/server/rateLimit";
-import { getCachedReport, reportCacheKey, setCachedReport } from "@/server/reportCache";
+import { AnalysisError } from "@/server/pagespeed";
+import { clientIdFrom } from "@/server/rateLimit";
+import { getReport, RateLimitedError } from "@/server/services";
 
 // Requires Fluid Compute on Vercel Hobby (max 300 s; 60 s without it). PSI has a 150 s deadline,
 // so slow audits end in a friendly 504, not a platform kill.
 export const maxDuration = 180;
-
-const minutes = (seconds: number) => Math.max(1, Math.ceil(seconds / 60));
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -22,31 +19,16 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { strategy, refresh } = parsed.data;
-    const url = normalizeUrl(parsed.data.url);
-    const cacheKey = reportCacheKey(url, strategy);
-
-    // Cache before rate limit: re-opening a recent report is free and doesn't use quota.
-    if (!refresh) {
-      const cached = await getCachedReport(cacheKey);
-      if (cached) return NextResponse.json(cached, { headers: { "X-Cache": "HIT" } });
-    }
-
-    const limit = await limitAnalyze(clientIdFrom(req));
-    if (!limit.success) {
+    const { url, strategy, refresh } = parsed.data;
+    const { report, cached } = await getReport(url, strategy, clientIdFrom(req), refresh);
+    return NextResponse.json(report, { headers: { "X-Cache": cached ? "HIT" : "MISS" } });
+  } catch (error) {
+    if (error instanceof RateLimitedError) {
       return NextResponse.json(
-        {
-          error: `You've reached the limit for new audits. Try again in about ${minutes(limit.retryAfterSeconds)} min — recently analyzed URLs still load instantly.`,
-          retryAfterSeconds: limit.retryAfterSeconds,
-        },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+        { error: error.message, retryAfterSeconds: error.retryAfterSeconds },
+        { status: 429, headers: { "Retry-After": String(error.retryAfterSeconds) } }
       );
     }
-
-    const report = await analyze(url, strategy);
-    await setCachedReport(cacheKey, report);
-    return NextResponse.json(report, { headers: { "X-Cache": "MISS" } });
-  } catch (error) {
     if (error instanceof AnalysisError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }

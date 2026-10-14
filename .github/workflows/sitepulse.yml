@@ -1,0 +1,112 @@
+# Audits every successful Vercel deployment with SitePulse against .sitepulse/budget.json.
+# Preview (PR) deployments are compared with production and get a sticky PR comment.
+#
+# Repository settings → Secrets and variables → Actions:
+#   secrets.GOOGLE_PAGESPEED_API_KEY          required (server key; not the browser key)
+#   secrets.AI_API_KEY                        optional, enables the AI explanation (Groq by default)
+#   secrets.VERCEL_AUTOMATION_BYPASS_SECRET   needed if previews use Vercel Deployment Protection
+#   vars.SITEPULSE_PRODUCTION_URL             baseline for PRs, e.g. https://your-app.vercel.app (a secret also works)
+# Use *repository* secrets: environment secrets are only visible to jobs that declare that environment.
+#   vars.AI_PROVIDER / vars.AI_MODEL          optional, see .env.example
+name: SitePulse performance
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: sitepulse-${{ github.event.deployment.environment }}-${{ github.event.deployment.sha }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      IS_PRODUCTION: ${{ github.event.deployment.environment == 'Production' }}
+      TARGET_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+      SHA: ${{ github.event.deployment.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 0 # full history, to diff the PR against the default branch
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Audit deployment
+        id: audit
+        env:
+          GOOGLE_PAGESPEED_API_KEY: ${{ secrets.GOOGLE_PAGESPEED_API_KEY }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER || 'groq' }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+          # Only previews are protected; never send the bypass secret when auditing production.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ github.event.deployment.environment != 'Production' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BASELINE_URL: ${{ vars.SITEPULSE_PRODUCTION_URL || secrets.SITEPULSE_PRODUCTION_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          if [ -z "$GOOGLE_PAGESPEED_API_KEY" ]; then
+            echo "::error::GOOGLE_PAGESPEED_API_KEY is not available to this job. Add it under Settings → Secrets and variables → Actions → Repository secrets (environment secrets aren't visible here)."
+            echo "exit=2" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ARGS=(--url "$TARGET_URL" --out-md sitepulse.md --out-json sitepulse.json --run-url "$RUN_URL")
+          if [ "$IS_PRODUCTION" = "true" ]; then
+            ARGS+=(--head-label "production")
+          else
+            ARGS+=(--head-label "this PR (preview)")
+            # Files this branch changed vs the default branch, so a docs/CI-only PR is not blamed for lab noise.
+            if git diff --name-only "origin/$DEFAULT_BRANCH...$SHA" > changed-files.txt 2>/dev/null; then
+              ARGS+=(--changed-files changed-files.txt)
+            fi
+            if [ -n "$BASELINE_URL" ]; then ARGS+=(--baseline-url "$BASELINE_URL" --base-label "production"); fi
+          fi
+          npx tsx scripts/sitepulse-ci.ts "${ARGS[@]}"
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f sitepulse.md ]; then cat sitepulse.md >> "$GITHUB_STEP_SUMMARY"; else echo "SitePulse audit failed to run; see the log." >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: sitepulse-${{ github.event.deployment.environment }}-${{ github.event.deployment.sha }}
+          path: sitepulse.json
+          if-no-files-found: ignore
+
+      - name: Comment on the pull request
+        if: env.IS_PRODUCTION != 'true' && hashFiles('sitepulse.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '[.[] | select(.state == "open")][0].number // empty')
+          if [ -z "$PR" ]; then echo "No open pull request for $SHA; skipping comment."; exit 0; fi
+          # Update our previous comment (found by its marker) instead of adding a new one each push.
+          ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- sitepulse-ci -->")) | .id' | head -n1)
+          if [ -n "$ID" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$ID" -F body=@sitepulse.md > /dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@sitepulse.md > /dev/null
+          fi
+          echo "Commented on #$PR"
+
+      - name: Fail on budget breach
+        if: steps.audit.outputs.exit != '0'
+        run: |
+          echo "SitePulse exited with ${{ steps.audit.outputs.exit }} (1 = budget broken, 2 = audit error)."
+          exit 1
