@@ -149,3 +149,34 @@ describe("renderCiComment", () => {
     expect(verdict(summaryFor(withinBudget, base, true)).failed).toBe(true);
   });
 });
+
+// Numbers from a live PR run (2026-10-14) whose comment wrongly flagged regressions.
+describe("noise floors (regressions from live CI)", () => {
+  const regression = BudgetConfigSchema.parse({}).regression;
+  const withLab = (r: Report, tbt: number): Report => ({ ...r, lab: { ...r.lab, tbt: { ...r.lab.tbt, value: tbt } } });
+
+  test("a small absolute TBT change is not a regression, however large the percentage", () => {
+    const base = withLab(makeReport(), 25);
+    const head = withLab(makeReport(), 131); // "+424%"
+    expect(compareReports(base, head, regression).deltas.find((d) => d.key === "tbtMs")!.regressed).toBe(false);
+  });
+
+  test("a large absolute TBT change still is", () => {
+    const base = withLab(makeReport(), 25);
+    const head = withLab(makeReport(), 600);
+    expect(compareReports(base, head, regression).deltas.find((d) => d.key === "tbtMs")!.regressed).toBe(true);
+  });
+
+  test("newly failing audits with negligible savings are not reported", () => {
+    const base = { ...makeReport(), opportunities: [] };
+    const head = {
+      ...makeReport(),
+      opportunities: [
+        { id: "forced-reflow-insight", title: "Forced reflow", displayValue: null, score: 0, savingsMs: 0, savingsBytes: 0, metricSavings: {} },
+        { id: "document-latency-insight", title: "Document request latency", displayValue: null, score: 0.5, savingsMs: 100, savingsBytes: 0, metricSavings: {} },
+        { id: "unused-javascript", title: "Reduce unused JavaScript", displayValue: null, score: 0.5, savingsMs: 0, savingsBytes: 300_000, metricSavings: {} },
+      ],
+    };
+    expect(compareReports(base, head, regression).opportunityChanges.map((c) => c.id)).toEqual(["unused-javascript"]);
+  });
+});

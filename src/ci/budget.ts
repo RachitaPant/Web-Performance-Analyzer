@@ -90,6 +90,12 @@ export interface OpportunityChange {
 
 // Below this, a change in an opportunity's estimated savings is lab noise.
 const OPPORTUNITY_NOISE_MS = 200;
+const OPPORTUNITY_NOISE_BYTES = 50_000;
+
+// A regression must also be large in absolute terms: on a near-zero baseline a percentage is
+// meaningless (TBT 25 -> 131 ms is "+424%" yet still well inside Google's "good" range).
+const MIN_REGRESSION_MS = 200;
+const MIN_REGRESSION_BYTES = 50_000;
 
 export const compareReports = (base: Report, head: Report, regression: BudgetConfig["regression"]) => {
   const deltas: MetricDelta[] = METRICS.map((m) => {
@@ -99,7 +105,10 @@ export const compareReports = (base: Report, head: Report, regression: BudgetCon
     if (b !== null && h !== null) {
       if (m.unit === "score") regressed = b - h >= regression.performancePoints;
       else if (m.unit === "cls") regressed = h - b > 0.05; // CLS is unitless; percentages near 0 are meaningless
-      else regressed = h > b && b > 0 && ((h - b) / b) * 100 >= regression.timingPercent;
+      else {
+        const floor = m.unit === "bytes" ? MIN_REGRESSION_BYTES : MIN_REGRESSION_MS;
+        regressed = h > b && b > 0 && h - b >= floor && ((h - b) / b) * 100 >= regression.timingPercent;
+      }
     }
     return { key: m.key, label: m.label, unit: m.unit, base: b, head: h, regressed };
   });
@@ -108,7 +117,11 @@ export const compareReports = (base: Report, head: Report, regression: BudgetCon
   const opportunityChanges: OpportunityChange[] = head.opportunities
     .map((o): OpportunityChange | null => {
       const before = baseById.get(o.id);
-      if (!before) return { id: o.id, title: o.title, status: "new", savingsMs: o.savingsMs, baseSavingsMs: 0 };
+      if (!before) {
+        // A newly failing audit with negligible estimated savings is lab noise, not news.
+        if (o.savingsMs < OPPORTUNITY_NOISE_MS && o.savingsBytes < OPPORTUNITY_NOISE_BYTES) return null;
+        return { id: o.id, title: o.title, status: "new", savingsMs: o.savingsMs, baseSavingsMs: 0 };
+      }
       if (o.savingsMs - before.savingsMs >= OPPORTUNITY_NOISE_MS) {
         return { id: o.id, title: o.title, status: "worse", savingsMs: o.savingsMs, baseSavingsMs: before.savingsMs };
       }

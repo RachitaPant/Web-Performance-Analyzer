@@ -99,14 +99,16 @@ const main = async () => {
 
     const budgetChecks = evaluateBudgets(head, config.budgets);
     const comparison = base ? compareReports(base, head, config.regression) : null;
-    const noteworthy =
-      budgetChecks.some((c) => !c.pass) || comparison?.regressed || (comparison?.opportunityChanges.length ?? 0) > 0;
+    // AI explains only real problems: a broken budget or a regression past the noise floors.
+    const noteworthy = budgetChecks.some((c) => !c.pass) || Boolean(comparison?.regressed);
 
     let ai: CiPageResult["ai"] = null;
     // With no app code changed there is nothing to explain: differences are measurement noise.
     if (noteworthy && !noRuntimeChanges({ changes }) && isAiConfigured()) {
       try {
-        ai = await explainRegression(head, comparison, budgetChecks, changes?.runtime ?? null);
+        const explanation = await explainRegression(head, comparison, budgetChecks, changes?.runtime ?? null);
+        // If no cause survived grounding, the summary has nothing verified behind it: show nothing.
+        ai = explanation.causes.length > 0 ? explanation : null;
       } catch (error) {
         console.warn(`  AI explanation skipped: ${error instanceof Error ? error.message : error}`);
       }
