@@ -6,7 +6,6 @@ import {
   initializeAuth,
   type Auth,
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -36,9 +35,9 @@ const createAuth = (app: FirebaseApp): Auth => {
   }
 };
 
-const app = isFirebaseConfigured ? (getApps()[0] ?? initializeApp(firebaseConfig)) : null;
+export const firebaseApp = isFirebaseConfigured ? (getApps()[0] ?? initializeApp(firebaseConfig)) : null;
 
-export const auth = app ? createAuth(app) : null;
-export const db = app ? getFirestore(app) : null;
+export const auth = firebaseApp ? createAuth(firebaseApp) : null;
+// Firestore lives in ./firestore so pages that only sign in (e.g. /login) don't download it.
 
 export const FIREBASE_UNAVAILABLE_MESSAGE = "Sign-in isn't configured on this deployment.";
