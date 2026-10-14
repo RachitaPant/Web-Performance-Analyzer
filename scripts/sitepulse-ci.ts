@@ -106,7 +106,7 @@ const main = async () => {
     // With no app code changed there is nothing to explain: differences are measurement noise.
     if (noteworthy && !noRuntimeChanges({ changes }) && isAiConfigured()) {
       try {
-        const explanation = await explainRegression(head, comparison, budgetChecks, changes?.runtime ?? null);
+        const explanation = await explainRegression(head, comparison, budgetChecks);
         // If no cause survived grounding, the summary has nothing verified behind it: show nothing.
         ai = explanation.causes.length > 0 ? explanation : null;
       } catch (error) {

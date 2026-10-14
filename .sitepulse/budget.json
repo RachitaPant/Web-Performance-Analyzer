@@ -1,5 +1,5 @@
 {
-  "runs": 3,
+  "runs": 5,
   "pages": [
     { "path": "/", "strategy": "mobile" },
     { "path": "/login", "strategy": "mobile" }

@@ -114,7 +114,7 @@ export const renderCiComment = (summary: CiSummary): string => {
     }
 
     if (page.ai) {
-      lines.push("<details><summary>🤖 AI analysis (cites the measured evidence)</summary>", "", page.ai.summary, "");
+      lines.push("<details><summary>🤖 AI: measured bottlenecks behind the failing metrics</summary>", "", page.ai.summary, "");
       for (const cause of page.ai.causes) lines.push(`- ${cause.text} — _${cause.evidence.join(", ")}_`);
       lines.push("", "</details>", "");
     }

@@ -177,7 +177,7 @@ Every successful Vercel deployment triggers [`.github/workflows/sitepulse.yml`](
 which runs [`scripts/sitepulse-ci.ts`](scripts/sitepulse-ci.ts) on GitHub's runner:
 
 - audits the pages in [`.sitepulse/budget.json`](.sitepulse/budget.json) and checks your budgets, using
-  the median of 3 independent Lighthouse runs per page (single runs vary widely: one page measured 99 and 69);
+  the median of independent Lighthouse runs per page (5 here; single runs vary widely: one page measured 99 and 69);
 - for pull-request previews, compares against production and lists new or worse Lighthouse opportunities;
 - when something broke or regressed, adds an AI explanation whose causes must cite real evidence;
 - posts one PR comment (updated on each push), writes a job summary and a JSON artifact, and fails the
