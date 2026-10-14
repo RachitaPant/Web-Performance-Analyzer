@@ -15,6 +15,7 @@ Next.js project on free tiers: no Chrome or backend server to host.
 - [Setup guide](#setup-guide): [run locally](#1-run-it-locally-5-minutes) · [Google Cloud](#2-google-cloud-pagespeed-and-crux)
   · [Firebase](#3-firebase-sign-in-and-saved-history) · [AI](#4-ai-provider-optional-free) · [Vercel](#5-deploy-to-vercel)
   · [CI budgets](#6-performance-budgets-in-ci-optional) · [Upstash](#7-shared-cache-with-upstash-optional)
+  · [MCP server](#8-mcp-server-for-ai-assistants-optional)
 - [Environment variables](#environment-variables) · [Troubleshooting](#troubleshooting)
 - [How it works](#how-it-works) · [How the AI layer stays honest](#how-the-ai-layer-stays-honest)
 - [Scripts](#scripts) · [API](#api) · [Project structure](#project-structure)
@@ -29,6 +30,7 @@ Next.js project on free tiers: no Chrome or backend server to host.
 - **History**: signed-in users can save runs and track their performance score over time.
 - **AI audit summary** and **Ask about this report** chat: every finding cites the measurements it relies on.
 - **Performance budgets in CI**: a GitHub Action audits every Vercel deployment and comments on PRs.
+- **MCP server**: AI assistants (Claude Code, Cursor, …) can call `analyze_url` and `get_ai_insights` directly.
 
 ---
 
@@ -45,6 +47,7 @@ Each step after the first is optional; the app degrades gracefully and tells you
 | 5. Vercel | A public deployment | Vercel + GitHub | Free (Hobby) |
 | 6. CI budgets | PR performance comments | GitHub | Free for public repos |
 | 7. Upstash | Shared cache and rate limits across instances | Upstash | Free tier |
+| 8. MCP server | SitePulse as tools inside AI assistants | – | Free |
 
 > The dashboard at `/dashboard` requires sign-in, so set up Firebase (step 3) to use the UI. Without it,
 > the API (`POST /api/analyze`) still works, and sign-in shows "Sign-in isn't configured".
@@ -229,6 +232,38 @@ each serverless instance's memory. For a shared cache across instances, create a
 [upstash.com](https://upstash.com) and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
 (Vercel's Upstash integration sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`, which also work).
 
+### 8. MCP server for AI assistants (optional)
+
+`/api/mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server (stateless Streamable
+HTTP) with two read-only tools:
+
+- `analyze_url` `{ url, strategy? }`: runs an audit (or reuses one cached in the last hour) and returns the
+  measurements as an id-tagged evidence list, the same one the app's own AI is grounded on.
+- `get_ai_insights` `{ url, strategy? }`: a prioritized fix plan in which every finding cites evidence ids.
+
+It spends your PageSpeed and LLM quota, so it is **disabled unless `MCP_API_KEY` is set**, and every request
+must send it as a bearer token. Generate a key:
+
+```sh
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Set it as `MCP_API_KEY` (in `.env.local` and/or Vercel, marked Sensitive), then connect a client:
+
+```sh
+# Claude Code
+claude mcp add --transport http sitepulse https://your-app.vercel.app/api/mcp --header "Authorization: Bearer YOUR_KEY"
+```
+
+```json
+// Cursor (.cursor/mcp.json) and other clients that support remote servers with headers
+{ "mcpServers": { "sitepulse": { "url": "https://your-app.vercel.app/api/mcp",
+                                 "headers": { "Authorization": "Bearer YOUR_KEY" } } } }
+```
+
+Then ask your assistant something like *"Audit example.com and tell me what to fix first."* Audits through
+MCP run server-side, so very heavy pages can hit the 150 s PageSpeed deadline (see step 2.4 for why).
+
 ---
 
 ## Environment variables
@@ -249,6 +284,7 @@ Copy [`.env.example`](.env.example) to `.env.local` for local development; set t
 | `AI_JSON_MODE` | AI | Server, CI | `json_schema` or `json_object`; overrides the provider default |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Shared cache | Server | Optional; token is secret |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | CI on protected previews | CI only | GitHub secret, not a Vercel env var |
+| `MCP_API_KEY` | MCP server | Server | Optional; secret. Unset = `/api/mcp` disabled |
 | `AI_PRICE_INPUT_PER_M`, `AI_PRICE_OUTPUT_PER_M` | Eval cost reporting | Local | Optional, USD per million tokens |
 
 ## Troubleshooting
@@ -266,6 +302,8 @@ Copy [`.env.example`](.env.example) to `.env.local` for local development; set t
 | CI log: *"GOOGLE_PAGESPEED_API_KEY is not available to this job"* | Secrets were added under Settings → Environments | Add them as **repository** secrets (Settings → Secrets and variables → Actions) |
 | CI audits of previews return a login page or 401 | Vercel Deployment Protection | Add `VERCEL_AUTOMATION_BYPASS_SECRET` (step 6) |
 | CI scores swing between runs | Lighthouse lab variance | Keep `runs` at 3 or more; widen budgets |
+| MCP client gets 503 | `MCP_API_KEY` not set on the deployment | Set it and redeploy (step 8) |
+| MCP client gets 401 | Missing or wrong bearer token | Send `Authorization: Bearer <MCP_API_KEY>` |
 | Previews consistently show higher TBT than production | Vercel Toolbar script injected into previews | Turn it off for Preview (step 6) |
 
 ---
@@ -338,7 +376,8 @@ and saved history.
 as `{ "error": string }` with an HTTP status: 400 for invalid or unreachable URLs, 429 when rate-limited
 (with `Retry-After` and `retryAfterSeconds`), 504 when the audit times out.
 
-Also: `POST /api/analyze/enrich` (browser path), `POST /api/insights`, `POST /api/chat`.
+Also: `POST /api/analyze/enrich` (browser path), `POST /api/insights`, `POST /api/chat`, and the MCP
+server at `/api/mcp` (step 8).
 
 ## Project structure
 ```
@@ -346,7 +385,8 @@ src/app/            pages and API routes (analyze, analyze/enrich, insights, cha
 src/components/     dashboard UI
 src/lib/            shared, isomorphic code: report schema, PageSpeed client and transform, evidence
 src/ci/             CI-only code (budgets, PR comment, changed-file classification); never imported by the app
-src/server/         server-only: data sources, cache, rate limits, AI (llm, providers, prompts, grounding)
+src/server/         server-only: data sources, cache, rate limits, shared services, AI (llm, providers,
+                    prompts, grounding), MCP formatting
 scripts/            sitepulse-ci.ts (the CI runner)
 evals/              AI eval cases, real report fixtures and runner
 tests/              Jest tests and fixtures
