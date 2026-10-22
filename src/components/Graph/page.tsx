@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebaseClient";
+import { db } from "@/lib/firestore";
 import { useAuth } from "@/lib/AuthProvider";
 import { collection, query, where, onSnapshot, Timestamp } from "firebase/firestore";
 import type { HistorySnapshot, Report, Strategy } from "@/lib/report";

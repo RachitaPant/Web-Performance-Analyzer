@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthProvider";
-import { db } from "@/lib/firebaseClient";
+import { db } from "@/lib/firestore";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 
 interface HistoryItem {

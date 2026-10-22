@@ -3,6 +3,7 @@ import * as analyze from "@/app/api/analyze/route";
 import * as enrich from "@/app/api/analyze/enrich/route";
 import * as chat from "@/app/api/chat/route";
 import * as insights from "@/app/api/insights/route";
+import * as mcp from "@/app/api/mcp/route";
 
 // Vercel Hobby with Fluid Compute caps functions at 300 s (60 s without Fluid Compute) and
 // rejects the whole deployment if any route asks for more.
@@ -13,6 +14,7 @@ test.each([
   ["api/analyze/enrich", enrich.maxDuration],
   ["api/chat", chat.maxDuration],
   ["api/insights", insights.maxDuration],
+  ["api/mcp", mcp.maxDuration],
 ])("%s maxDuration fits the Vercel Hobby limit", (_route, maxDuration) => {
   expect(maxDuration).toBeGreaterThanOrEqual(1);
   expect(maxDuration).toBeLessThanOrEqual(VERCEL_HOBBY_MAX_DURATION);

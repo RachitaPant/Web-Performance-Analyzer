@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Zap, AlertTriangle, Smartphone, Monitor, History } from "lucide-react";
-import { db, auth } from "@/lib/firebaseClient";
+import { auth } from "@/lib/firebaseClient";
+import { db } from "@/lib/firestore";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
