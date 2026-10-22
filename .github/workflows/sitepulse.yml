@@ -62,7 +62,12 @@ jobs:
             echo "exit=2" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          ARGS=(--url "$TARGET_URL" --out-md sitepulse.md --out-json sitepulse.json --run-url "$RUN_URL")
+          URL="$TARGET_URL"
+          # Vercel reports a production deployment's unique URL, which is login-protected (and we never
+          # send the bypass secret for production). Audit the public production domain instead: it is
+          # what visitors load, and auditing the unique URL measured Vercel's sign-in page.
+          if [ "$IS_PRODUCTION" = "true" ] && [ -n "$BASELINE_URL" ]; then URL="$BASELINE_URL"; fi
+          ARGS=(--url "$URL" --out-md sitepulse.md --out-json sitepulse.json --run-url "$RUN_URL")
           if [ "$IS_PRODUCTION" = "true" ]; then
             ARGS+=(--head-label "production")
           else

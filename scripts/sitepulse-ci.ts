@@ -20,7 +20,7 @@ import { transformPageSpeed } from "@/lib/transformPageSpeed";
 import { isAiConfigured } from "@/server/ai/llm";
 import { explainRegression } from "@/ci/regression";
 import { enrichPageSpeedReport } from "@/server/analyze";
-import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
+import { landedOnDifferentSite, redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
 
 const PSI_DEADLINE_MS = 5 * 60_000;
 const args = (() => {
@@ -52,6 +52,12 @@ const audit = async (url: string, strategy: Strategy, protectedTarget: boolean, 
       const target = withRunParam(base, `${start.toString(36)}-${i}`);
       const pagespeed = transformPageSpeed(await requestPageSpeed(target, strategy, key!, PSI_DEADLINE_MS), url, strategy);
       pagespeed.finalUrl = stripAuditParams(pagespeed.finalUrl);
+      if (landedOnDifferentSite(url, pagespeed.finalUrl)) {
+        throw new Error(
+          `${url} redirected to ${new URL(pagespeed.finalUrl).origin}, so Lighthouse measured a different site ` +
+            "(often a login page for a protected deployment). Check Deployment Protection and the bypass secret."
+        );
+      }
       return pagespeed;
     })
   );

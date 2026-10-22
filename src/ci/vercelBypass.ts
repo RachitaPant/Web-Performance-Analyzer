@@ -35,3 +35,15 @@ export const stripAuditParams = (url: string) => {
 // Last line of defense for any text leaving the process.
 export const redactSecret = (text: string, secret: string | null) =>
   secret ? text.split(secret).join("***") : text;
+
+// Did the audited page end up on a different site than requested? (e.g. a protected deployment
+// redirecting to Vercel's sign-in page — CI once measured that page instead of the app.)
+// A www/non-www redirect within the same site is fine.
+export const landedOnDifferentSite = (requestedUrl: string, finalUrl: string) => {
+  const host = (u: string) => new URL(u).hostname.toLowerCase().replace(/^www\./, "");
+  try {
+    return host(requestedUrl) !== host(finalUrl);
+  } catch {
+    return false;
+  }
+};
