@@ -98,17 +98,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          PR=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '[.[] | select(.state == "open")][0].number // empty')
-          if [ -z "$PR" ]; then echo "No open pull request for $SHA; skipping comment."; exit 0; fi
+          # The comment is a convenience: never fail the check because it couldn't be posted.
+          if ! PR=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '[.[] | select(.state == "open")][0].number // empty'); then
+            echo "::warning::Couldn't look up the pull request for $SHA; skipping the comment (results are in the job summary)."
+            exit 0
+          fi
+          if [ -z "$PR" ]; then echo "No open pull request for $SHA (push before the PR was opened?); skipping comment."; exit 0; fi
           # Update our previous comment (found by its marker) instead of adding a new one each push.
           ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
             --jq '.[] | select(.body | startswith("<!-- sitepulse-ci -->")) | .id' | head -n1)
           if [ -n "$ID" ]; then
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$ID" -F body=@sitepulse.md > /dev/null
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$ID" -F body=@sitepulse.md > /dev/null && OK=1
           else
-            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@sitepulse.md > /dev/null
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@sitepulse.md > /dev/null && OK=1
           fi
-          echo "Commented on #$PR"
+          if [ -n "$OK" ]; then echo "Commented on #$PR"; else echo "::warning::Couldn't comment on #$PR; results are in the job summary."; fi
 
       - name: Fail on budget breach
         if: steps.audit.outputs.exit != '0'
