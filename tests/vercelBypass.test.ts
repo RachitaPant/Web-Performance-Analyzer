@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
+import { landedOnDifferentSite, redactSecret, stripAuditParams, withBypass, withRunParam } from "@/ci/vercelBypass";
 
 const SECRET = "s3cr3t-bypass-value-1234567890abcd";
 const PREVIEW = "https://app-git-feature-team.vercel.app/login?ref=pr";
@@ -30,4 +30,11 @@ test("redaction removes every occurrence, including URL-embedded and JSON-escape
   expect(clean).not.toContain(SECRET);
   expect(clean.match(/\*\*\*/g)).toHaveLength(3);
   expect(redactSecret(leaked, null)).toBe(leaked);
+});
+
+test("detects when an audit ended up on another site (e.g. a login redirect)", () => {
+  expect(landedOnDifferentSite("https://app-abc.vercel.app/", "https://vercel.com/login?next=x")).toBe(true);
+  expect(landedOnDifferentSite("https://example.com/", "https://www.example.com/")).toBe(false);
+  expect(landedOnDifferentSite("https://www.example.com/a", "https://example.com/b")).toBe(false);
+  expect(landedOnDifferentSite("https://example.com/", "not a url")).toBe(false);
 });
